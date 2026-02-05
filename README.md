@@ -20,7 +20,7 @@
 
 ```mermaid
 flowchart LR
-    A[User: "Add tests"] --> B[Agent]
+    A[User Task] --> B[Agent]
     B --> C[Explore codebase]
     C --> D[Try patterns]
     D --> E[Write code]
@@ -33,27 +33,27 @@ flowchart LR
 **This Fork** — References on Demand pattern loads standards BEFORE coding:
 
 ```mermaid
-flowchart LR
-    A[User: "Add tests"] --> B[Builder Agent]
+flowchart TB
+    A[User Task] --> B[Builder Agent]
     B --> C{Detect Stack}
-    C -->|pom.xml| D[Load java-patterns.md]
-    D --> E[Keywords: test?]
-    E -->|Yes| F[Load java-testing.md]
-    F --> G[Context7: Spring docs]
-    G --> H[Write code]
+    C -->|pom.xml found| D[Load java-patterns.md]
+    D --> E{Keywords?}
+    E -->|test, junit| F[Load java-testing.md]
+    E -->|controller, api| G[Context7: Spring docs]
+    F --> H[Write Code]
+    G --> H
     H --> I[PostToolUse Hooks]
-    I --> J[spotless_validator]
-    I --> K[maven_compile_validator]
-    J & K --> L{Pass?}
-    L -->|No| M[Block + Feedback]
-    M --> H
-    L -->|Yes| N[Done]
+    I --> J[Validators]
+    J --> K{Pass?}
+    K -->|No| L[Block + Fix]
+    L --> H
+    K -->|Yes| M[Done]
 
     style A fill:#f9f,stroke:#333
-    style N fill:#afa,stroke:#333
+    style M fill:#afa,stroke:#333
     style F fill:#aff,stroke:#333
+    style G fill:#aff,stroke:#333
     style J fill:#ffa,stroke:#333
-    style K fill:#ffa,stroke:#333
 ```
 
 **Key Differences:**
