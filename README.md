@@ -55,14 +55,11 @@ flowchart LR
 ## Quick Start
 
 ```bash
-# Clone this fork
-git clone git@github.com:a-simeshin/claude-code-hooks-mastery.git
-
-# Copy .claude folder to your Java project
-cp -r claude-code-hooks-mastery/.claude /path/to/your/java/project/
-
-# Start Claude Code — validators will auto-trigger on Write/Edit
+# Run in your project directory
+curl -fsSL https://raw.githubusercontent.com/a-simeshin/claude-code-hooks-mastery/main/install.sh | bash
 ```
+
+This installs `.claude/` with refs, agents, and validators. Start Claude Code to use them.
 
 ## Validators Auto-Trigger by File Extension
 
