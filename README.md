@@ -1,11 +1,49 @@
 # Claude Code Hooks Mastery
 
+> **Fork Notice:** This is a personal fork of [disler/claude-code-hooks-mastery](https://github.com/disler/claude-code-hooks-mastery) tailored for **Java** and **Java + React** projects.
+
+## What's Different in This Fork
+
+| Addition | Description |
+|----------|-------------|
+| **Java Validators** | Spotless (Palantir), Maven compile, JaCoCo 80%, PMD, OSS Index security |
+| **React/TS Validators** | ESLint, TypeScript compiler, Prettier |
+| **Python Validators** | Bandit security scanner |
+| **Java Patterns** | `.claude/refs/java-patterns.md` — Java 17/21 coding standards, Spring Boot patterns |
+| **Java Testing** | `.claude/refs/java-testing.md` — Testcontainers, Podman, Allure, Selenide E2E, JaCoCo |
+| **Universal Builder** | Single agent for Java/React/Python with auto-detection and Context7 integration |
+| **References on Demand** | Auto-load refs based on task keywords (test, controller, component, etc.) |
+
+### Quick Start for Java Projects
+
+```bash
+# Clone this fork
+git clone git@github.com:a-simeshin/claude-code-hooks-mastery.git
+
+# Copy .claude folder to your Java project
+cp -r claude-code-hooks-mastery/.claude /path/to/your/java/project/
+
+# Start Claude Code — validators will auto-trigger on Write/Edit
+```
+
+### Validators Auto-Trigger by File Extension
+
+| Extension | Validators |
+|-----------|------------|
+| `.java` | spotless, maven_compile |
+| `.ts`, `.tsx` | eslint, tsc |
+| `.js`, `.jsx` | eslint, prettier |
+| `.py` | ruff, ty, bandit |
+
+---
+
 [Claude Code Hooks](https://docs.anthropic.com/en/docs/claude-code/hooks) - Quickly master how to use Claude Code hooks to add deterministic (or non-deterministic) control over Claude Code's behavior. Plus learn about [Claude Code Sub-Agents](#claude-code-sub-agents), the powerful [Meta-Agent](#the-meta-agent), and [Team-Based Validation](#team-based-validation-system) with agent orchestration.
 
 <img src="images/hooked.png" alt="Claude Code Hooks" style="max-width: 800px; width: 100%;" />
 
 ## Table of Contents
 
+- [What's Different in This Fork](#whats-different-in-this-fork)
 - [Prerequisites](#prerequisites)
 - [Hook Lifecycle & Payloads](#hook-lifecycle--payloads)
 - [What This Shows](#what-this-shows)
