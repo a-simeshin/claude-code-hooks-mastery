@@ -77,4 +77,5 @@ This installs `.claude/` with refs, agents, and validators. Start Claude Code to
 
 ## Original Documentation
 
-For complete documentation on hooks, sub-agents, status lines, and output styles, see [ORIGINAL_README.md](ORIGINAL_README.md).
+- [Original repository](https://github.com/disler/claude-code-hooks-mastery) by [@disler](https://github.com/disler)
+- [ORIGINAL_README.md](ORIGINAL_README.md) — full documentation on hooks, sub-agents, status lines, output styles
