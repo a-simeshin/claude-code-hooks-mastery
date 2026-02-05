@@ -68,8 +68,9 @@ flowchart LR
 
 ## Quick Start
 
+Run in your project directory:
+
 ```bash
-# Run in your project directory
 curl -fsSL https://raw.githubusercontent.com/a-simeshin/claude-code-hooks-mastery/main/install.sh | bash
 ```
 
