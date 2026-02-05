@@ -23,8 +23,6 @@ flowchart LR
     C --> D[Try patterns]
     D --> E[Write code]
     E --> F[Manual review]
-
-    style F fill:#faa,stroke:#333
 ```
 
 ### This Fork — References on Demand
@@ -43,11 +41,6 @@ flowchart LR
     I --> J[Validators]
     J -->|Fail| I
     J -->|Pass| K[Done]
-
-    style D fill:#aff,stroke:#333
-    style G fill:#aff,stroke:#333
-    style J fill:#ffa,stroke:#333
-    style K fill:#afa,stroke:#333
 ```
 
 **Key Differences:**
