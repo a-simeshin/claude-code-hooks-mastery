@@ -4,15 +4,29 @@
 
 ## What's Different in This Fork
 
-| Addition | Description |
-|----------|-------------|
-| **Java Validators** | Spotless (Palantir), Maven compile, JaCoCo 80%, PMD, OSS Index security |
-| **React/TS Validators** | ESLint, TypeScript compiler, Prettier |
-| **Python Validators** | Bandit security scanner |
-| **Java Patterns** | `.claude/refs/java-patterns.md` — Java 17/21 coding standards, Spring Boot patterns |
-| **Java Testing** | `.claude/refs/java-testing.md` — Testcontainers, Podman, Allure, Selenide E2E, JaCoCo |
-| **Universal Builder** | Single agent for Java/React/Python with auto-detection and Context7 integration |
-| **References on Demand** | Auto-load refs based on task keywords (test, controller, component, etc.) |
+### Validators (PostToolUse hooks)
+
+| Stack | Tools |
+|-------|-------|
+| **Java** | Spotless (Palantir), Maven compile, JaCoCo 80%, PMD, OSS Index |
+| **React/TS** | ESLint, TypeScript compiler, Prettier |
+| **Python** | Ruff, Ty, Bandit |
+
+### References (`.claude/refs/`)
+
+| File | Content |
+|------|---------|
+| `java-patterns.md` | Java 17/21 coding standards, Spring Boot patterns |
+| `java-testing.md` | Testcontainers, Podman, Allure, Selenide E2E, JaCoCo |
+
+### Agents (`.claude/agents/team/`)
+
+| Agent | Purpose |
+|-------|---------|
+| `builder.md` | Universal builder for Java/React/Python with Context7 integration |
+| `validator.md` | Read-only validation agent |
+
+**Key feature:** References on Demand — auto-load refs based on task keywords (test, controller, api, etc.)
 
 ### Default Claude Code Flow
 
