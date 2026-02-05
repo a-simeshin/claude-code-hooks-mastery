@@ -51,7 +51,7 @@ flowchart LR
 
 ### Real Example: Token Savings
 
-**Task:** `"Добавь endpoint GET /api/tutors/{id} с обработкой 404 и интеграционным тестом"`
+**Task:** `"Add GET /api/tutors/{id} endpoint with 404 handling and integration test"`
 
 | Approach | What's Loaded | Tokens |
 |----------|---------------|--------|
@@ -64,7 +64,7 @@ flowchart LR
 {
   "sections": ["java-patterns#basics", "java-patterns#errors",
                "java-testing#structure", "java-testing#integration"],
-  "reasoning": "'endpoint' → basics; '404' → errors; 'тест' → structure..."
+  "reasoning": "'endpoint' → basics; '404' → errors; 'test' → structure..."
 }
 ```
 
