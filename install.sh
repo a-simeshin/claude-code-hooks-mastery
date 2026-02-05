@@ -76,6 +76,14 @@ else
 fi
 
 # ─────────────────────────────────────────────────────────────
+# 3. Agentic Mode
+# ─────────────────────────────────────────────────────────────
+echo ""
+echo -e "${YELLOW}Agentic mode runs without permission prompts.${NC}"
+read -p "Start Claude Code with --dangerously-skip-permissions? [y/N]: " -n 1 -r AGENTIC_CHOICE
+echo
+
+# ─────────────────────────────────────────────────────────────
 # Apply configuration
 # ─────────────────────────────────────────────────────────────
 echo ""
@@ -107,4 +115,12 @@ echo ""
 echo -e "${GREEN}Done!${NC}"
 echo ""
 echo "Installed to .claude/"
-echo "Start Claude Code in this directory to use the hooks."
+
+# Launch Claude Code if agentic mode selected
+if [[ $AGENTIC_CHOICE =~ ^[Yy]$ ]]; then
+    echo ""
+    echo -e "${YELLOW}Starting Claude Code in agentic mode...${NC}"
+    exec claude --dangerously-skip-permissions
+else
+    echo "Run 'claude' to start, or 'claude --dangerously-skip-permissions' for agentic mode."
+fi
