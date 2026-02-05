@@ -80,10 +80,6 @@ cp -r claude-code-hooks-mastery/.claude /path/to/your/java/project/
 
 ---
 
-[Claude Code Hooks](https://docs.anthropic.com/en/docs/claude-code/hooks) - Quickly master how to use Claude Code hooks to add deterministic (or non-deterministic) control over Claude Code's behavior. Plus learn about [Claude Code Sub-Agents](#claude-code-sub-agents), the powerful [Meta-Agent](#the-meta-agent), and [Team-Based Validation](#team-based-validation-system) with agent orchestration.
-
-<img src="images/hooked.png" alt="Claude Code Hooks" style="max-width: 800px; width: 100%;" />
-
 ## Table of Contents
 
 - [What's Different in This Fork](#whats-different-in-this-fork)
