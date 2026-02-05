@@ -17,6 +17,32 @@ echo -e "${GREEN}Claude Code Hooks Installer${NC}"
 echo -e "${CYAN}For Java / React / Python projects${NC}"
 echo ""
 
+# ─────────────────────────────────────────────────────────────
+# Check and install UV (required for hooks)
+# ─────────────────────────────────────────────────────────────
+if ! command -v uv &> /dev/null; then
+    echo -e "${YELLOW}UV not found. Installing...${NC}"
+
+    if [[ "$OSTYPE" == "darwin"* ]] && command -v brew &> /dev/null; then
+        # macOS with Homebrew
+        brew install uv
+    else
+        # Cross-platform installer
+        curl -LsSf https://astral.sh/uv/install.sh | sh
+        # Add to PATH for current session
+        export PATH="$HOME/.local/bin:$PATH"
+    fi
+
+    if command -v uv &> /dev/null; then
+        echo -e "${GREEN}UV installed successfully${NC}"
+    else
+        echo -e "${YELLOW}Warning: UV installation may require restart. Add ~/.local/bin to PATH${NC}"
+    fi
+else
+    echo -e "${GREEN}UV found: $(uv --version)${NC}"
+fi
+echo ""
+
 # Check if .claude already exists
 if [ -d ".claude" ]; then
     echo -e "${YELLOW}Note: .claude directory exists, will merge files${NC}"

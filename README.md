@@ -134,8 +134,8 @@ curl -fsSL https://raw.githubusercontent.com/a-simeshin/claude-code-hooks-master
 
 ## Prerequisites
 
-- **[Astral UV](https://docs.astral.sh/uv/getting-started/installation/)** — Fast Python package installer
 - **[Claude Code](https://docs.anthropic.com/en/docs/claude-code)** — Anthropic's CLI for Claude AI
+- **[Astral UV](https://docs.astral.sh/uv/)** — Auto-installed by installer (or `brew install uv`)
 
 ## Original Documentation
 
