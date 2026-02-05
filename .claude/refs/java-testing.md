@@ -1,5 +1,7 @@
 # Java Testing Standards
 
+<!-- section:philosophy -->
+
 ## Философия тестирования
 
 ```
@@ -104,7 +106,11 @@ void createOrder_withValidRequest_returns201() {
 }
 ```
 
+<!-- /section:philosophy -->
+
 ---
+
+<!-- section:structure -->
 
 # Part 1: Базовые паттерны
 
@@ -350,7 +356,11 @@ class OrderServiceIntegrationTest extends BaseIntegrationTest {
 }
 ```
 
+<!-- /section:structure -->
+
 ---
+
+<!-- section:integration -->
 
 # Part 2: Реальные интеграционные тесты
 
@@ -453,6 +463,10 @@ logging:
     org.springframework.test: DEBUG
     org.testcontainers: INFO
 ```
+
+<!-- /section:integration -->
+
+<!-- section:http -->
 
 ## 8. HTTP Integration Tests
 
@@ -557,6 +571,10 @@ class OrderControllerIntegrationTest extends BaseIntegrationTest {
 }
 ```
 
+<!-- /section:http -->
+
+<!-- section:kafka -->
+
 ## 9. Kafka Integration Tests
 
 ```java
@@ -617,6 +635,10 @@ class OrderKafkaIntegrationTest extends BaseIntegrationTest {
     }
 }
 ```
+
+<!-- /section:kafka -->
+
+<!-- section:jdbc -->
 
 ## 10. JDBC Integration Tests
 
@@ -702,6 +724,10 @@ class OrderRepositoryIntegrationTest extends BaseIntegrationTest {
     }
 }
 ```
+
+<!-- /section:jdbc -->
+
+<!-- section:wiremock -->
 
 ## 11. External API Tests (WireMock)
 
@@ -792,7 +818,11 @@ class PaymentGatewayIntegrationTest extends BaseIntegrationTest {
 }
 ```
 
+<!-- /section:wiremock -->
+
 ---
+
+<!-- section:mockito -->
 
 # Part 3: Unit тесты с Mocks (для Coverage)
 
@@ -909,7 +939,11 @@ class OrderServiceUnitTest {
 }
 ```
 
+<!-- /section:mockito -->
+
 ---
+
+<!-- section:e2e -->
 
 # Part 4: UI/E2E Testing (Selenide + Testcontainers)
 
@@ -1341,7 +1375,11 @@ class OrderServiceTest {
 }
 ```
 
+<!-- /section:e2e -->
+
 ---
+
+<!-- section:maven -->
 
 # Part 6: Package Structure & Maven Configuration
 
@@ -1688,3 +1726,5 @@ mvn allure:serve
 - [ ] LINE ≥ 80%
 - [ ] BRANCH ≥ 80%
 - [ ] JaCoCo check на merged.exec
+
+<!-- /section:maven -->

@@ -28,6 +28,33 @@
 
 **Key feature:** References on Demand — auto-load refs based on task keywords (test, controller, api, etc.)
 
+### Agent Specialization for Token Optimization
+
+Universal agent loads all references into context. Specialized agents load only what's needed:
+
+| File | Size | ~Tokens |
+|------|------|---------|
+| `builder.md` | 10 KB | 2,500 |
+| `java-patterns.md` | 24 KB | 6,000 |
+| `java-testing.md` | 56 KB | 14,000 |
+| **Total** | **90 KB** | **22,500** |
+
+**Comparison:**
+
+| Approach | Dev Task | Test Task |
+|----------|----------|-----------|
+| Universal builder | 22,500 tokens | 22,500 tokens |
+| Specialized java-developer | 7,500 tokens | — |
+| Specialized java-tester | — | 15,500 tokens |
+| **Savings** | **67%** | **31%** |
+
+**When to specialize:**
+- High volume of similar tasks → create dedicated agent
+- Large reference files (>10KB) → split by domain
+- Context window pressure → reduce noise
+
+**Trade-off:** More agents to maintain vs. lower token costs and focused context.
+
 ### Default Claude Code Flow
 
 ```mermaid

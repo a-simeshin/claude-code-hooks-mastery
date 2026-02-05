@@ -1,5 +1,7 @@
 # Java Code Standards
 
+<!-- section:basics -->
+
 ## 1. No-Nest Rule
 
 Maximum ONE level of nesting inside a function. Extract nested logic to separate methods.
@@ -418,7 +420,11 @@ Grep("class.*Service", type="java")
 Grep("@RestController", type="java")
 ```
 
+<!-- /section:basics -->
+
 ---
+
+<!-- section:java17 -->
 
 # Modern Java Features (17+)
 
@@ -541,6 +547,10 @@ String json = """
     """.formatted(userId, action, Instant.now());
 ```
 
+<!-- /section:java17 -->
+
+<!-- section:errors -->
+
 ## 13. Обработка ошибок в Spring Boot
 
 **Sealed classes / Result pattern НЕ нужны.** Spring Boot обрабатывает исключения автоматически.
@@ -634,6 +644,10 @@ public Order getById(@PathVariable final String id) {
 }
 ```
 
+<!-- /section:errors -->
+
+<!-- section:java17 -->
+
 ## 14. Named Constants
 
 Никаких magic numbers/strings.
@@ -690,7 +704,11 @@ public void copyData(Path source, Path target) throws IOException {
 }
 ```
 
+<!-- /section:java17 -->
+
 ---
+
+<!-- section:java21 -->
 
 # Java 21+ Features (⚠️ Требует Java 21)
 
@@ -760,6 +778,8 @@ list.addLast("end");                 // ["start", "a", "b", "c", "end"]
 
 List<String> reversed = list.reversed();  // View, не копия
 ```
+
+<!-- /section:java21 -->
 
 ---
 
