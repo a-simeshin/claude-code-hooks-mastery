@@ -19,14 +19,7 @@ echo ""
 
 # Check if .claude already exists
 if [ -d ".claude" ]; then
-    echo -e "${YELLOW}Warning: .claude directory already exists${NC}"
-    read -p "Overwrite? (y/N) " -n 1 -r
-    echo
-    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-        echo "Aborted."
-        exit 1
-    fi
-    rm -rf .claude
+    echo -e "${YELLOW}Note: .claude directory exists, will merge files${NC}"
 fi
 
 # Create temp directory
@@ -37,8 +30,9 @@ trap "rm -rf $TMP_DIR" EXIT
 echo "Downloading from github.com/${REPO}..."
 curl -fsSL "https://github.com/${REPO}/archive/refs/heads/${BRANCH}.tar.gz" | tar -xz -C "$TMP_DIR"
 
-# Copy .claude folder
-cp -r "$TMP_DIR/claude-code-hooks-mastery-${BRANCH}/.claude" .
+# Copy .claude folder (merge if exists)
+mkdir -p .claude
+cp -r "$TMP_DIR/claude-code-hooks-mastery-${BRANCH}/.claude/." .claude/
 
 echo ""
 echo -e "${GREEN}Configuration${NC}"
@@ -53,7 +47,7 @@ echo "  2) v9 - Minimal powerline style"
 echo "  3) v5 - Cost tracking"
 echo "  4) v3 - Agent sessions with history"
 echo "  5) Disable"
-read -p "Choose [1-5, default=1]: " STATUS_CHOICE
+read -p "Choose [1-5, default=1]: " STATUS_CHOICE </dev/tty
 
 case $STATUS_CHOICE in
     2) STATUS_LINE="status_line_v9.py" ;;
@@ -67,7 +61,7 @@ esac
 # 2. TTS Notifications
 # ─────────────────────────────────────────────────────────────
 echo ""
-read -p "Enable TTS notifications? (requires ElevenLabs/OpenAI) [y/N]: " -n 1 -r TTS_CHOICE
+read -p "Enable TTS notifications? (requires ElevenLabs/OpenAI) [y/N]: " -n 1 -r TTS_CHOICE </dev/tty
 echo
 if [[ $TTS_CHOICE =~ ^[Yy]$ ]]; then
     TTS_ENABLED=true
@@ -80,7 +74,7 @@ fi
 # ─────────────────────────────────────────────────────────────
 echo ""
 echo -e "${YELLOW}Agentic mode runs without permission prompts.${NC}"
-read -p "Start Claude Code with --dangerously-skip-permissions? [y/N]: " -n 1 -r AGENTIC_CHOICE
+read -p "Start Claude Code with --dangerously-skip-permissions? [y/N]: " -n 1 -r AGENTIC_CHOICE </dev/tty
 echo
 
 # ─────────────────────────────────────────────────────────────
