@@ -16,44 +16,36 @@
 
 ### Default Claude Code Flow vs This Fork
 
-**Default Flow** — agent starts with minimal context, explores codebase reactively:
-
-```mermaid
-flowchart LR
-    A[User Task] --> B[Agent]
-    B --> C[Explore codebase]
-    C --> D[Try patterns]
-    D --> E[Write code]
-    E --> F[Hope it works]
-
-    style A fill:#f9f,stroke:#333
-    style F fill:#faa,stroke:#333
-```
-
-**This Fork** — References on Demand pattern loads standards BEFORE coding:
-
 ```mermaid
 flowchart TB
-    A[User Task] --> B[Builder Agent]
-    B --> C{Detect Stack}
-    C -->|pom.xml found| D[Load java-patterns.md]
-    D --> E{Keywords?}
-    E -->|test, junit| F[Load java-testing.md]
-    E -->|controller, api| G[Context7: Spring docs]
-    F --> H[Write Code]
-    G --> H
-    H --> I[PostToolUse Hooks]
-    I --> J[Validators]
-    J --> K{Pass?}
-    K -->|No| L[Block + Fix]
-    L --> H
-    K -->|Yes| M[Done]
+    subgraph DEFAULT [Default Claude Code]
+        A1[User Task] --> A2[Agent]
+        A2 --> A3[Explore codebase]
+        A3 --> A4[Try patterns from training]
+        A4 --> A5[Write code]
+        A5 --> A6[Manual review]
+    end
 
-    style A fill:#f9f,stroke:#333
-    style M fill:#afa,stroke:#333
-    style F fill:#aff,stroke:#333
-    style G fill:#aff,stroke:#333
-    style J fill:#ffa,stroke:#333
+    subgraph FORK [This Fork - References on Demand]
+        B1[User Task] --> B2[Builder Agent]
+        B2 --> B3{Detect Stack}
+        B3 -->|pom.xml| B4[java-patterns.md]
+        B3 -->|package.json| B5[react-patterns.md]
+        B4 --> B6{Keywords}
+        B6 -->|test, junit| B7[java-testing.md]
+        B6 -->|api, controller| B8[Context7 docs]
+        B7 --> B9[Write code]
+        B8 --> B9
+        B9 --> B10[Validators]
+        B10 -->|Fail| B9
+        B10 -->|Pass| B11[Done]
+    end
+
+    style A6 fill:#faa,stroke:#333
+    style B11 fill:#afa,stroke:#333
+    style B4 fill:#aff,stroke:#333
+    style B7 fill:#aff,stroke:#333
+    style B10 fill:#ffa,stroke:#333
 ```
 
 **Key Differences:**
