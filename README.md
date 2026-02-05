@@ -61,6 +61,12 @@ curl -fsSL https://raw.githubusercontent.com/a-simeshin/claude-code-hooks-master
 
 This installs `.claude/` with refs, agents, and validators. Start Claude Code to use them.
 
+### Uninstall
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/a-simeshin/claude-code-hooks-mastery/main/uninstall.sh | bash
+```
+
 ## Validators Auto-Trigger by File Extension
 
 | Extension | Validators |
