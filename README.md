@@ -26,72 +26,86 @@
 | `builder.md` | Universal builder for Java/React/Python with Context7 integration |
 | `validator.md` | Read-only validation agent |
 
-**Key feature:** References on Demand — auto-load refs based on task keywords (test, controller, api, etc.)
+### Semantic Context Routing
 
-### Agent Specialization for Token Optimization
-
-Universal agent loads all references into context. Specialized agents load only what's needed:
-
-| File | Size | ~Tokens |
-|------|------|---------|
-| `builder.md` | 10 KB | 2,500 |
-| `java-patterns.md` | 24 KB | 6,000 |
-| `java-testing.md` | 56 KB | 14,000 |
-| **Total** | **90 KB** | **22,500** |
-
-**Comparison:**
-
-| Approach | Dev Task | Test Task |
-|----------|----------|-----------|
-| Universal builder | 22,500 tokens | 22,500 tokens |
-| Specialized java-developer | 7,500 tokens | — |
-| Specialized java-tester | — | 15,500 tokens |
-| **Savings** | **67%** | **31%** |
-
-**When to specialize:**
-- High volume of similar tasks → create dedicated agent
-- Large reference files (>10KB) → split by domain
-- Context window pressure → reduce noise
-
-**Trade-off:** More agents to maintain vs. lower token costs and focused context.
-
-### Default Claude Code Flow
+Instead of loading all refs or creating multiple agents, this fork uses **dynamic section loading**:
 
 ```mermaid
 flowchart LR
-    A[Task] --> B[Agent]
-    B --> C[Explore]
-    C --> D[Try patterns]
-    D --> E[Write code]
-    E --> F[Manual review]
+    A[Task] --> B[Context Router]
+    B --> C{Semantic Analysis}
+    C --> D["sections: [basics, errors, http]"]
+    D --> E[Section Loader]
+    E --> F[Focused Context<br/>~5k tokens]
+    F --> G[Builder]
+    G --> H[Validators]
+    H -->|Fail| G
+    H -->|Pass| I[Done]
 ```
 
-### This Fork — References on Demand
+**How it works:**
+1. `context_router.py` analyzes task semantically
+2. Returns only required section names
+3. `section_loader.py` extracts marked sections from refs
+4. Builder gets focused context instead of full files
 
-```mermaid
-flowchart LR
-    A[Task] --> B[Builder]
-    B --> C{Stack?}
-    C -->|pom.xml| D[java-patterns.md]
-    C -->|package.json| E[react-patterns.md]
-    D --> F{Keywords?}
-    F -->|test| G[java-testing.md]
-    F -->|api| H[Context7]
-    G --> I[Write code]
-    H --> I
-    I --> J[Validators]
-    J -->|Fail| I
-    J -->|Pass| K[Done]
+### Real Example: Token Savings
+
+**Task:** `"Добавь endpoint GET /api/tutors/{id} с обработкой 404 и интеграционным тестом"`
+
+| Approach | What's Loaded | Tokens |
+|----------|---------------|--------|
+| **Full refs** | java-patterns.md + java-testing.md | ~20,000 |
+| **Semantic routing** | basics + errors + structure + http | ~5,847 |
+| **Savings** | | **71%** |
+
+```bash
+# Router output
+{
+  "sections": ["java-patterns#basics", "java-patterns#errors",
+               "java-testing#structure", "java-testing#integration"],
+  "reasoning": "'endpoint' → basics; '404' → errors; 'тест' → structure..."
+}
 ```
+
+### Available Sections
+
+**java-patterns.md:**
+| Section | Content |
+|---------|---------|
+| `basics` | No-nest, fail-fast, final, Lombok, comments |
+| `errors` | @ControllerAdvice, exceptions, 404/400/409 |
+| `java17` | Records, pattern matching, switch expressions |
+| `java21` | Virtual threads, sequenced collections |
+
+**java-testing.md:**
+| Section | Content |
+|---------|---------|
+| `structure` | Naming, given-when-then, AssertJ, Allure |
+| `integration` | Testcontainers, Podman, base test class |
+| `http` | REST tests, MockMvc, TestRestTemplate |
+| `kafka` | Kafka consumer/producer tests |
+| `jdbc` | Repository tests, transactions |
+| `mockito` | Unit tests, mocks, edge cases |
+| `e2e` | Selenide, browser tests, page objects |
+| `maven` | Surefire, Failsafe, JaCoCo config |
+
+### Comparison with Other Approaches
+
+| Approach | Tokens | Agents | Flexibility |
+|----------|--------|--------|-------------|
+| Universal (load all) | 22,500 | 1 | Low |
+| Specialized (3 agents) | 7,500-15,500 | 3 | Medium |
+| **Semantic routing** | **~5,000** | **1** | **High** |
 
 **Key Differences:**
 
-| Aspect | Default | This Fork |
-|--------|---------|-----------|
-| **Context** | Reactive exploration | Proactive refs loading |
+| Aspect | Default Claude | This Fork |
+|--------|----------------|-----------|
+| **Context loading** | Reactive exploration | Semantic pre-routing |
 | **Standards** | Agent's training data | Your `.claude/refs/*.md` |
-| **Validation** | Manual review | Auto-validators on Write/Edit |
-| **Feedback** | After task complete | Immediate block + fix |
+| **Granularity** | Full files | Marked sections |
+| **Validation** | Manual review | Auto-validators |
 
 ## Quick Start
 
