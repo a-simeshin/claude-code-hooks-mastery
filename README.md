@@ -14,6 +14,57 @@
 | **Universal Builder** | Single agent for Java/React/Python with auto-detection and Context7 integration |
 | **References on Demand** | Auto-load refs based on task keywords (test, controller, component, etc.) |
 
+### Default Claude Code Flow vs This Fork
+
+**Default Flow** — agent starts with minimal context, explores codebase reactively:
+
+```mermaid
+flowchart LR
+    A[User: "Add tests"] --> B[Agent]
+    B --> C[Explore codebase]
+    C --> D[Try patterns]
+    D --> E[Write code]
+    E --> F[Hope it works]
+
+    style A fill:#f9f,stroke:#333
+    style F fill:#faa,stroke:#333
+```
+
+**This Fork** — References on Demand pattern loads standards BEFORE coding:
+
+```mermaid
+flowchart LR
+    A[User: "Add tests"] --> B[Builder Agent]
+    B --> C{Detect Stack}
+    C -->|pom.xml| D[Load java-patterns.md]
+    D --> E[Keywords: test?]
+    E -->|Yes| F[Load java-testing.md]
+    F --> G[Context7: Spring docs]
+    G --> H[Write code]
+    H --> I[PostToolUse Hooks]
+    I --> J[spotless_validator]
+    I --> K[maven_compile_validator]
+    J & K --> L{Pass?}
+    L -->|No| M[Block + Feedback]
+    M --> H
+    L -->|Yes| N[Done]
+
+    style A fill:#f9f,stroke:#333
+    style N fill:#afa,stroke:#333
+    style F fill:#aff,stroke:#333
+    style J fill:#ffa,stroke:#333
+    style K fill:#ffa,stroke:#333
+```
+
+**Key Differences:**
+
+| Aspect | Default | This Fork |
+|--------|---------|-----------|
+| **Context** | Reactive exploration | Proactive refs loading |
+| **Standards** | Agent's training data | Your `.claude/refs/*.md` |
+| **Validation** | Manual review | Auto-validators on Write/Edit |
+| **Feedback** | After task complete | Immediate block + fix |
+
 ### Quick Start for Java Projects
 
 ```bash
