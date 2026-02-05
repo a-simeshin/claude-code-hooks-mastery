@@ -76,20 +76,9 @@ else
 fi
 
 # ─────────────────────────────────────────────────────────────
-# 3. Stack selection
-# ─────────────────────────────────────────────────────────────
-echo ""
-echo "Which stacks do you need validators for?"
-read -p "  Java (Spotless, Maven)? [Y/n]: " -n 1 -r JAVA_CHOICE
-echo
-read -p "  React/TypeScript (ESLint, TSC)? [Y/n]: " -n 1 -r REACT_CHOICE
-echo
-read -p "  Python (Ruff, Bandit)? [Y/n]: " -n 1 -r PYTHON_CHOICE
-echo
-
-# ─────────────────────────────────────────────────────────────
 # Apply configuration
 # ─────────────────────────────────────────────────────────────
+echo ""
 SETTINGS_FILE=".claude/settings.json"
 
 # Status Line
@@ -113,36 +102,7 @@ else
     echo "  TTS: enabled"
 fi
 
-# Remove unused validators
-if [[ ! $JAVA_CHOICE =~ ^[Yy]?$ ]] || [[ $JAVA_CHOICE == "n" ]] || [[ $JAVA_CHOICE == "N" ]]; then
-    rm -f .claude/hooks/validators/spotless_validator.py
-    rm -f .claude/hooks/validators/maven_compile_validator.py
-    rm -f .claude/hooks/validators/jacoco_validator.py
-    rm -f .claude/hooks/validators/pmd_validator.py
-    rm -f .claude/hooks/validators/ossindex_validator.py
-    echo "  Java validators: removed"
-else
-    echo "  Java validators: installed"
-fi
-
-if [[ ! $REACT_CHOICE =~ ^[Yy]?$ ]] || [[ $REACT_CHOICE == "n" ]] || [[ $REACT_CHOICE == "N" ]]; then
-    rm -f .claude/hooks/validators/eslint_validator.py
-    rm -f .claude/hooks/validators/tsc_validator.py
-    rm -f .claude/hooks/validators/prettier_validator.py
-    echo "  React/TS validators: removed"
-else
-    echo "  React/TS validators: installed"
-fi
-
-if [[ ! $PYTHON_CHOICE =~ ^[Yy]?$ ]] || [[ $PYTHON_CHOICE == "n" ]] || [[ $PYTHON_CHOICE == "N" ]]; then
-    rm -f .claude/hooks/validators/ruff_validator.py
-    rm -f .claude/hooks/validators/ty_validator.py
-    rm -f .claude/hooks/validators/bandit_validator.py
-    echo "  Python validators: removed"
-else
-    echo "  Python validators: installed"
-fi
-
+echo "  Validators: Java, React/TS, Python (all installed)"
 echo ""
 echo -e "${GREEN}Done!${NC}"
 echo ""
