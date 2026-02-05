@@ -14,38 +14,40 @@
 | **Universal Builder** | Single agent for Java/React/Python with auto-detection and Context7 integration |
 | **References on Demand** | Auto-load refs based on task keywords (test, controller, component, etc.) |
 
-### Default Claude Code Flow vs This Fork
+### Default Claude Code Flow
 
 ```mermaid
-flowchart TB
-    subgraph DEFAULT [Default Claude Code]
-        A1[User Task] --> A2[Agent]
-        A2 --> A3[Explore codebase]
-        A3 --> A4[Try patterns from training]
-        A4 --> A5[Write code]
-        A5 --> A6[Manual review]
-    end
+flowchart LR
+    A[Task] --> B[Agent]
+    B --> C[Explore]
+    C --> D[Try patterns]
+    D --> E[Write code]
+    E --> F[Manual review]
 
-    subgraph FORK [This Fork - References on Demand]
-        B1[User Task] --> B2[Builder Agent]
-        B2 --> B3{Detect Stack}
-        B3 -->|pom.xml| B4[java-patterns.md]
-        B3 -->|package.json| B5[react-patterns.md]
-        B4 --> B6{Keywords}
-        B6 -->|test, junit| B7[java-testing.md]
-        B6 -->|api, controller| B8[Context7 docs]
-        B7 --> B9[Write code]
-        B8 --> B9
-        B9 --> B10[Validators]
-        B10 -->|Fail| B9
-        B10 -->|Pass| B11[Done]
-    end
+    style F fill:#faa,stroke:#333
+```
 
-    style A6 fill:#faa,stroke:#333
-    style B11 fill:#afa,stroke:#333
-    style B4 fill:#aff,stroke:#333
-    style B7 fill:#aff,stroke:#333
-    style B10 fill:#ffa,stroke:#333
+### This Fork — References on Demand
+
+```mermaid
+flowchart LR
+    A[Task] --> B[Builder]
+    B --> C{Stack?}
+    C -->|pom.xml| D[java-patterns.md]
+    C -->|package.json| E[react-patterns.md]
+    D --> F{Keywords?}
+    F -->|test| G[java-testing.md]
+    F -->|api| H[Context7]
+    G --> I[Write code]
+    H --> I
+    I --> J[Validators]
+    J -->|Fail| I
+    J -->|Pass| K[Done]
+
+    style D fill:#aff,stroke:#333
+    style G fill:#aff,stroke:#333
+    style J fill:#ffa,stroke:#333
+    style K fill:#afa,stroke:#333
 ```
 
 **Key Differences:**
