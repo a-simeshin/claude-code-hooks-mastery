@@ -76,7 +76,7 @@ def manage_session_data(session_id, prompt, name_agent=False):
         # Try Ollama first (preferred)
         try:
             result = subprocess.run(
-                ["uv", "run", ".claude/hooks/utils/llm/ollama.py", "--agent-name"],
+                ["uv", "run", "--no-project", ".claude/hooks/utils/llm/ollama.py", "--agent-name"],
                 capture_output=True,
                 text=True,
                 timeout=5  # Shorter timeout for local Ollama
@@ -93,7 +93,7 @@ def manage_session_data(session_id, prompt, name_agent=False):
             # Fall back to Anthropic if Ollama fails
             try:
                 result = subprocess.run(
-                    ["uv", "run", ".claude/hooks/utils/llm/anth.py", "--agent-name"],
+                    ["uv", "run", "--no-project", ".claude/hooks/utils/llm/anth.py", "--agent-name"],
                     capture_output=True,
                     text=True,
                     timeout=10
