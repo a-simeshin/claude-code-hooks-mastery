@@ -160,6 +160,15 @@ def main():
         
         # Log the session start event
         log_session_start(input_data)
+
+        # Reset subagent logs for new session (prevents stale data)
+        log_dir = Path("logs")
+        for filename in ["subagent_start.json", "subagent_stop.json"]:
+            filepath = log_dir / filename
+            try:
+                filepath.write_text("[]")
+            except OSError:
+                pass
         
         # Load development context if requested
         if args.load_context:

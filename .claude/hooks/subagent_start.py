@@ -7,6 +7,7 @@
 # ///
 
 import argparse
+import fcntl
 import json
 import os
 import sys
@@ -115,22 +116,23 @@ def main() -> None:
         os.makedirs(log_dir, exist_ok=True)
         log_path = os.path.join(log_dir, "subagent_start.json")
 
-        # Read existing log data or initialize empty list
-        if os.path.exists(log_path):
-            with open(log_path, 'r') as f:
+        # Atomic read-append-write with file locking (prevents race condition)
+        fd = os.open(log_path, os.O_RDWR | os.O_CREAT, 0o644)
+        try:
+            fcntl.flock(fd, fcntl.LOCK_EX)
+            with os.fdopen(os.dup(fd), 'r+') as f:
+                content = f.read()
                 try:
-                    log_data = json.load(f)
+                    log_data = json.loads(content) if content.strip() else []
                 except (json.JSONDecodeError, ValueError):
                     log_data = []
-        else:
-            log_data = []
-
-        # Append new data
-        log_data.append(input_data)
-
-        # Write back to file with formatting
-        with open(log_path, 'w') as f:
-            json.dump(log_data, f, indent=2)
+                log_data.append(input_data)
+                f.seek(0)
+                f.truncate()
+                json.dump(log_data, f, indent=2)
+        finally:
+            fcntl.flock(fd, fcntl.LOCK_UN)
+            os.close(fd)
 
         debug_log(f"Logged SubagentStart: agent_id={agent_id}, agent_type={agent_type}")
 

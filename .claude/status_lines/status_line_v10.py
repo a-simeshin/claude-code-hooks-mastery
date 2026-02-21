@@ -108,10 +108,12 @@ def get_last_transcript_action(transcript_path: str, agent_id: str) -> str | Non
         if file_size == 0:
             return None
 
-        # Read last 8KB — enough for several entries
-        read_size = min(file_size, 8192)
+        # Read last 64KB — agent messages can be 10-20KB each
+        read_size = min(file_size, 65536)
         with open(tp, "r") as f:
-            f.seek(file_size - read_size)
+            if file_size > read_size:
+                f.seek(file_size - read_size)
+                f.readline()  # skip partial first line after seek
             tail = f.read()
 
         # Parse lines from the end, find last assistant entry with tool_use
@@ -165,23 +167,27 @@ def get_last_transcript_action(transcript_path: str, agent_id: str) -> str | Non
     return None
 
 
-def get_agent_status() -> dict:
+def get_agent_status(session_id: str | None = None) -> dict:
     """Returns {running: [...], done_count: int} with current actions for running agents."""
     logs_dir = get_logs_dir()
     starts = load_json_log(logs_dir / "subagent_start.json")
     stops = load_json_log(logs_dir / "subagent_stop.json")
 
-    # Index starts
+    # Index starts (filtered by session_id)
     started: dict[str, dict] = {}
     for entry in starts:
+        if session_id and entry.get("session_id") != session_id:
+            continue
         aid = entry.get("agent_id", "")
         atype = entry.get("agent_type", "")
         if aid and atype not in EXCLUDED_AGENT_TYPES:
             started[aid] = entry
 
-    # Index stops
+    # Index stops (filtered by session_id)
     stopped_ids: set[str] = set()
     for entry in stops:
+        if session_id and entry.get("session_id") != session_id:
+            continue
         aid = entry.get("agent_id", "")
         atype = entry.get("agent_type", "")
         if aid and atype not in EXCLUDED_AGENT_TYPES:
@@ -230,9 +236,9 @@ def generate_status_line(input_data: dict) -> str:
 
     usage_color = get_usage_color(used_percentage)
 
-    # Check for running agents
+    # Check for running agents (filtered by current session)
     try:
-        agents = get_agent_status()
+        agents = get_agent_status(session_id=input_data.get("session_id"))
     except Exception:
         agents = {"running": [], "done_count": 0}
 
