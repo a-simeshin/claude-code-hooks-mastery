@@ -33,20 +33,34 @@ The status line provides **real-time visibility** into parallel sub-agents direc
 
 **When idle (no agents):**
 ```
-[Opus] # [###############-------] | 42.5% used | ~115k left | abc12345
+[Opus] # [######---------] | 42.0% used | ~116k left | abc12345
 ```
 
-**When agents are running:**
+**When agents are running (multi-line):**
 ```
-[Opus] [########--] 42% | ▶2 ✓1 | ▶builder(45s) Write CartController.java | ▶builder(32s) Edit App.tsx
+[Opus] [###-----] 42% | ▶2 ✓1
+ ▶ builder         12s  Edit Service.java
+ ▶ Explore         8s   Read App.tsx
+```
+
+**Dynamic lifecycle — updates every 300ms:**
+```
+Step 1: agent starts     → ▶1  builder  0s  Read App.java
+Step 2: second agent     → ▶2  builder Read App.java + Explore Write Cart.tsx
+Step 3: action changes   → ▶2  builder Edit Service.java (updated!)
+Step 4: agent finishes   → ▶1 ✓1  only running agents shown
+Step 5: all done         → back to standard single-line format
 ```
 
 **How it works:**
 - `status_line_v10.py` extends v6 (context window bar) with agent monitoring
 - Reads `logs/subagent_start.json` + `logs/subagent_stop.json` to compute running/done agents
-- For running agents, reads the last 8KB of transcript `.jsonl` to extract the current tool action
-- Stateless — no state files, each invocation is independent
+- Filters by current `session_id` — no phantom agents from old sessions
+- For running agents, reads the last 64KB of transcript `.jsonl` to extract the current tool action
+- `fcntl` file locking in hooks prevents race conditions when parallel agents write simultaneously
+- Logs reset on session start — no infinite accumulation
 - Filters out `monitor` and `context-router` agent types from display
+- ~32ms per invocation (10x under the 300ms limit)
 
 ### Semantic Context Routing
 
