@@ -366,5 +366,5 @@ Team members:
 - <list of team members and their roles (concise)>
 
 When you're ready, you can execute the plan in a new agent by running:
-/build <replace with path to plan>
+/smart_build <replace with path to plan>
 ```
