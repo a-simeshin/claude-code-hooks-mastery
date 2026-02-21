@@ -251,39 +251,44 @@ def generate_status_line(input_data: dict) -> str:
         ]
         return " | ".join(parts)
 
-    # ── Agents active: compact format ──
-    parts = [
+    # ── Agents active: table format (one agent per row) ──
+    lines = []
+
+    # Header line: model + context bar + agent counts
+    header_parts = [
         f"{CYAN}[{model_name}]{RESET}",
         f"{create_progress_bar(used_percentage, 8)} {usage_color}{used_percentage:.0f}%{RESET}",
     ]
-
-    # Agent counts
     counts = []
     if running:
         counts.append(f"{GREEN}▶{len(running)}{RESET}")
     if done_count:
         counts.append(f"{DIM}✓{done_count}{RESET}")
-    parts.append(" ".join(counts))
+    header_parts.append(" ".join(counts))
+    lines.append(" | ".join(header_parts))
 
-    # Running agent details (truncate if too many)
-    max_agents_shown = 3
+    # Agent rows — fixed-width columns for alignment
+    max_agents_shown = 5
     for agent in running[:max_agents_shown]:
         atype = agent["type"]
         dur = format_duration(agent["duration"])
-        action = agent["action"]
+        action = agent["action"] or ""
+
+        if len(action) > 50:
+            action = action[:47] + "…"
+
+        type_col = f"{atype:<14}"
+        dur_col = f"{dur:>6}"
 
         if action:
-            # Truncate action to fit
-            if len(action) > 35:
-                action = action[:32] + "…"
-            parts.append(f"{GREEN}▶{RESET}{atype}({dur}) {BRIGHT_WHITE}{action}{RESET}")
+            lines.append(f" {GREEN}▶{RESET} {type_col} {DIM}{dur_col}{RESET}  {BRIGHT_WHITE}{action}{RESET}")
         else:
-            parts.append(f"{GREEN}▶{RESET}{atype}({dur})")
+            lines.append(f" {GREEN}▶{RESET} {type_col} {DIM}{dur_col}{RESET}")
 
     if len(running) > max_agents_shown:
-        parts.append(f"{DIM}+{len(running) - max_agents_shown} more{RESET}")
+        lines.append(f"   {DIM}+{len(running) - max_agents_shown} more...{RESET}")
 
-    return " | ".join(parts)
+    return "\n".join(lines)
 
 
 def main():
