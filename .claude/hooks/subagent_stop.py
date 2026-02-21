@@ -222,6 +222,9 @@ def main() -> None:
         else:
             log_data = []
 
+        # Add timestamp for duration calculation (matches subagent_start.py)
+        input_data["logged_at"] = datetime.now().isoformat()
+
         # Append new data
         log_data.append(input_data)
 

@@ -21,10 +21,49 @@
 
 ### Agents (`.claude/agents/team/`)
 
-| Agent | Purpose |
-|-------|---------|
-| `builder.md` | Universal builder for Java/React/Python with Context7 integration |
-| `validator.md` | Read-only validation agent |
+| Agent | Model | Purpose |
+|-------|-------|---------|
+| `builder.md` | Opus | Universal builder for Java/React/Python with Context7 integration |
+| `validator.md` | Opus | Read-only validation agent |
+| `monitor.md` | Haiku | Lightweight sub-agent observer — reports parallel agent progress every 10s |
+
+### Monitor Agent
+
+When running parallel sub-agents via `/build`, the **monitor agent** provides real-time visibility into what each agent is doing. It runs on **Haiku** (minimal cost) and reports every 10 seconds:
+
+```
+━━━ Agent Monitor [12:05:30] ━━━
+Tasks: 2/7 done | Agents: 2 running, 1 done
+
+▶ builder (45s)
+  Last 10s: Write CartController.java, Edit SecurityConfig.java
+  Now: Bash: mvn compile
+
+▶ builder (32s)
+  Last 10s: Write CartContext.tsx
+  Now: Edit App.tsx
+
+✓ builder (18s) → Created CheckoutPage.tsx placeholder
+
+Tasks:
+  ✓ #1 Backend Cart Foundation
+  ▶ #2 Frontend Cart API
+  ◻ #3 MaterialPage Buttons (blocked by #2)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+**How it works:**
+- `monitor_check.py` parses `subagent_start/stop` hook logs and reads agent transcripts incrementally (byte offsets)
+- Extracts tool calls (Write, Edit, Read, Bash) from new JSONL transcript entries
+- Monitor agent formats the data and calls `TaskList` for task progress
+- Exits automatically when all observed agents are done
+
+**Usage in orchestrator:**
+```python
+Task(builder-backend, run_in_background: true)
+Task(builder-frontend, run_in_background: true)
+Task(monitor, model: haiku, run_in_background: false)  # foreground — writes to chat
+```
 
 ### Semantic Context Routing
 
@@ -140,4 +179,3 @@ curl -fsSL https://raw.githubusercontent.com/a-simeshin/claude-code-hooks-master
 ## Original Documentation
 
 - [Original repository](https://github.com/disler/claude-code-hooks-mastery) by [@disler](https://github.com/disler)
-- [ORIGINAL_README.md](ORIGINAL_README.md) — full documentation on hooks, sub-agents, status lines, output styles
