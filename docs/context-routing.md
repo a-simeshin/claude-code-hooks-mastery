@@ -201,37 +201,14 @@ The Haiku agent was replaced with deterministic keyword matching. Same test: **8
 
 ## Research
 
-The approach is supported by recent research on context management for LLM agents:
-
-### Context overload degrades quality
-
-- **Context Rot** ([Chroma Research, 2025](https://research.trychroma.com/context-rot)) — LLM performance degrades as context length increases, even when the relevant information is present. Models have an "attention budget" — every added token depletes it. Accuracy drops from 75% to 55% when relevant content moves deeper into context.
-
-- **Maximum Effective Context Window** ([Paulsen, 2025, arXiv:2509.21361](https://arxiv.org/abs/2509.21361)) — The effective context window is drastically smaller than advertised. Across 11 LLMs, the effective window ranged from 100–2,500 tokens for complex tasks. Our ~5k loaded tokens are near the practical upper bound.
-
-- **SWE-Pruner** ([Yang et al., 2026, arXiv:2601.16746](https://arxiv.org/abs/2601.16746)) — Read-type operations consume 76.1% of total tokens in coding agents. Section-level granularity (our approach) preserves code structure better than token-level pruning, which breaks syntax. Achieves 23–38% token reductions with less than 1% performance drop.
-
-### Routing strategies
-
-- **Routing Survey** ([Varangot-Reille et al., 2025, arXiv:2502.00409](https://arxiv.org/abs/2502.00409)) — Comprehensive survey of routing strategies: similarity-based, supervised, RL-based, generative. Our keyword router is a deterministic similarity-based approach — the simplest and most reliable category. The survey suggests hybrid (keyword + embedding) as the next evolution.
-
-- **RCR-Router** ([arXiv:2508.04903](https://arxiv.org/abs/2508.04903)) — Role-aware context routing for multi-agent systems. Routes different context subsets to agents based on their role (builder vs validator). Reduces token consumption while improving task success rates.
-
-### How coding tools solve this
-
-- **Sourcegraph Cody** ([Hartman et al., 2024, arXiv:2408.05344](https://arxiv.org/abs/2408.05344)) — Production coding assistant using hybrid dense-sparse retrieval. Combines keyword precision with semantic recall. Context quality is the single largest driver of recommendation quality.
-
-- **Cursor Rules Study** ([Jiang et al., 2025, arXiv:2512.18925](https://arxiv.org/abs/2512.18925)) — Analysis of 401 repos with coding standards. 28.7% of rule lines are duplicates. Different languages and domains require different rule types — validating the need for per-stack routing rather than monolithic standards files.
-
-- **Aider** ([aider.chat](https://aider.chat/docs/repomap.html)) — Builds a repository map using tree-sitter + PageRank. Ranks symbols by reference frequency and dynamically fits them into the token budget.
-
-### Compression and optimization
-
-- **LLMLingua-2** ([Jiang et al., Microsoft Research, 2024, arXiv:2403.12968](https://arxiv.org/abs/2403.12968)) — Up to 20x prompt compression with minimal performance loss. Could be applied as a post-routing step to compress loaded sections further.
-
-- **AttentionRAG** ([Fang et al., 2025, arXiv:2503.10720](https://arxiv.org/abs/2503.10720)) — Uses the model's own attention patterns to prune context. Achieves 6.3x compression while maintaining performance. Could validate whether our keyword mappings align with what the model actually attends to.
-
-- **Agentic RAG Survey** ([Singh et al., 2025, arXiv:2501.09136](https://arxiv.org/abs/2501.09136)) — Identifies four patterns for retrieval: reflection, planning, tool use, multi-agent collaboration. Suggests adding a reflection step where the agent can request additional sections if the initial routing was insufficient.
+| Research | Direct relevance |
+|----------|-----------------|
+| [Context Rot](https://research.trychroma.com/context-rot) (Chroma, 2025) | Accuracy drops 75% → 55% as context grows. Justifies loading ~5k tokens instead of ~40k. |
+| [Maximum Effective Context Window](https://arxiv.org/abs/2509.21361) (Paulsen, 2025) | Effective window across 11 LLMs: 100–2,500 tokens for complex tasks. Our ~5k loaded tokens are near the practical ceiling. |
+| [SWE-Pruner](https://arxiv.org/abs/2601.16746) (Yang et al., 2026) | Section-level granularity preserves code structure; token-level pruning breaks syntax. 23–38% token reduction, <1% performance drop. |
+| [Routing Survey](https://arxiv.org/abs/2502.00409) (Varangot-Reille et al., 2025) | Classifies deterministic keyword matching as the simplest and most reliable routing category. |
+| [RCR-Router](https://arxiv.org/abs/2508.04903) (2025) | Role-aware context routing in multi-agent systems — builder and validator receive different context subsets. Matches our builder/validator split. |
+| [Cursor Rules Study](https://arxiv.org/abs/2512.18925) (Jiang et al., 2025) | 401 repos analyzed: different languages need different rule types, 28.7% of monolithic rules are duplicates. Validates per-stack routing. |
 
 ## Key Files
 
