@@ -19,26 +19,35 @@ flowchart TD
 
 ## Two-Round Requirements Interview
 
-Before designing a solution, the planner asks clarifying questions in two rounds.
+Every assumption the planner makes instead of asking is a potential contradiction or missed requirement. The planner interviews the user aggressively — it is always cheaper to ask one extra question than to rewrite a plan or debug a wrong implementation.
 
 ### Round 1: After Analyzing Requirements
 
 Questions about ambiguities in the user's request — before reading any code:
 
-- **Mutually exclusive approaches** — "Should duplicate favorites return 409 or silently succeed?"
-- **Missing behavior specs** — "What should unauthenticated users see when clicking the heart?"
-- **Scope boundaries** — "Should the admin panel also display favorite counts?"
-- **Priority tradeoffs** — "Optimize for simplicity or for performance at scale?"
+- **Error handling strategy** — "Return error code or silently succeed?"
+- **Behavior per user state** — "What sees unauthorized user? Empty list user? Admin?"
+- **Mutually exclusive approaches** — whenever two valid approaches exist, ask which one
+- **Scope boundaries** — "Only this page or also admin panel?", "Include tests or separate task?"
+- **Priority tradeoffs** — "Simplicity vs performance?", "Full feature or MVP first?"
+- **UI/UX specifics** — "What text for empty state?", "Where exactly to place the button?"
+- **Data model choices** — "Separate table or column on existing?", "Soft delete or hard delete?"
 
 ### Round 2: After Reading the Codebase
 
 Questions about implementation choices visible from the code:
 
-- **Pattern selection** — "The codebase has both CartService (optimistic) and OrderService (pessimistic) patterns — which to mirror?"
-- **Technical tradeoffs** — "Denormalized counter vs COUNT query — the codebase uses both, which fits here?"
-- **Edge cases from code** — "SecurityConfig has a catch-all rule — add explicit matcher for consistency, or rely on the catch-all?"
+- **Pattern selection** — "Codebase has CartService (optimistic) and OrderService (pessimistic) — which to mirror?"
+- **Technical tradeoffs** — "Denormalized counter vs COUNT query — codebase uses both, which fits here?"
+- **Concurrency** — "JPA read-modify-write or atomic SQL?", "Optimistic or pessimistic locking?"
+- **Integration** — "SecurityConfig has catch-all — add explicit rule for consistency?"
+- **API contract** — "Return void or return updated entity?", "What HTTP status for each case?"
+- **Edge cases from code** — "Existing code handles X this way — same pattern or different?"
 
-The number of questions scales with complexity. Simple fixes need 0 questions. Complex features may need 3-5 per round.
+The number of questions scales with complexity:
+- **Complex features**: 5-15 questions across multiple `AskUserQuestion` calls per round
+- **Medium tasks**: 3-5 questions per round
+- **Trivial fixes**: 0 questions (skip both rounds)
 
 ## Section Routing Catalog
 

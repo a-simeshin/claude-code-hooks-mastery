@@ -266,20 +266,29 @@ TaskOutput({
 IMPORTANT: **PLANNING ONLY** - Do not execute, build, or deploy. Output is a plan document.
 
 1. Analyze Requirements - Parse the USER_PROMPT to understand the core problem and desired outcome
-2. **Clarify Requirements** — Identify ambiguities, contradictions, and unclear areas in the USER_PROMPT. Use `AskUserQuestion` to ask about:
-   - Mutually exclusive approaches (e.g., "return 409 or silently succeed on duplicate?")
-   - Missing behavior specifications (e.g., "what happens when unauthenticated user clicks X?")
-   - Unclear scope boundaries (e.g., "should admin panel also show this data?")
-   - Priority tradeoffs (e.g., "optimize for simplicity or for performance?")
-   - The more ambiguities the task has, the more questions you should ask. Complex features may need 3-5 questions. Simple fixes may need 0.
-   - Do NOT proceed with assumptions on non-obvious choices — ask the user instead.
+2. **Clarify Requirements (Interview Round 1)** — Conduct a thorough interview about the USER_PROMPT. Every assumption you make instead of asking is a potential contradiction or missed requirement in the final plan. Ask aggressively — it is always cheaper to ask one extra question than to rewrite a plan or debug a wrong implementation.
+   - Use `AskUserQuestion` to ask about EVERY unclear or ambiguous aspect. Call it multiple times if needed (AskUserQuestion supports 1-4 questions per call).
+   - **Error handling strategy** — "return error code or silently succeed?", "show error to user or log and retry?"
+   - **Behavior for each user state** — "what sees unauthorized user?", "what sees user with empty list?", "what sees admin?"
+   - **Mutually exclusive approaches** — whenever two valid approaches exist, ask which one
+   - **Scope boundaries** — "only this page or also admin panel?", "mobile responsive or desktop only?", "include tests or separate task?"
+   - **Priority tradeoffs** — "simplicity vs performance?", "full feature now or MVP first?"
+   - **UI/UX specifics** — "what text for empty state?", "where exactly to place the button?", "what happens on click?"
+   - **Data model choices** — "separate table or column on existing?", "soft delete or hard delete?"
+   - **CRITICAL**: Do NOT make assumptions on ANY non-obvious choice. If you're not 100% sure from the prompt — ask.
    - Do NOT ask about things you can determine from the codebase — save those for step 4.
+   - Aim for 5-15 questions total across multiple AskUserQuestion calls for complex features. 3-5 for medium tasks. 0 for trivial fixes only.
 3. Understand Codebase - Without subagents, directly understand existing patterns, architecture, and relevant files
-4. **Clarify Implementation** — Now that you know the codebase, ask about implementation-specific ambiguities via `AskUserQuestion`:
-   - Existing patterns that could apply in multiple ways (e.g., "mirror CartService or create a different pattern?")
-   - Technical tradeoffs visible from the code (e.g., "denormalized counter vs. COUNT query — codebase uses both")
-   - Edge cases discovered in the code (e.g., "existing SecurityConfig has catch-all — add explicit rule or rely on it?")
-   - Skip this step if all implementation choices are clear from the codebase patterns.
+4. **Clarify Implementation (Interview Round 2)** — Now that you know the codebase, conduct a second interview about implementation-specific choices. The codebase often reveals multiple valid patterns, tradeoffs, and edge cases that were invisible at the requirements stage. Ask about every one.
+   - Use `AskUserQuestion` to ask about EVERY implementation ambiguity. Call it multiple times if needed.
+   - **Pattern selection** — "codebase has CartService (optimistic) and OrderService (pessimistic) — which to mirror?"
+   - **Technical tradeoffs from code** — "denormalized counter vs COUNT query — codebase uses both, which fits here?"
+   - **Concurrency and data integrity** — "JPA read-modify-write or atomic SQL update?", "optimistic or pessimistic locking?"
+   - **Integration with existing code** — "SecurityConfig has catch-all — add explicit rule for consistency?", "modify existing DTO or create new one?"
+   - **API contract details** — "return void or return updated entity?", "what HTTP status for each case?"
+   - **Edge cases from code** — "existing code handles X this way — same pattern or different for this feature?"
+   - **CRITICAL**: Every implementation choice you make without asking is a potential FAIL in plan review. When in doubt, ask.
+   - Skip this step ONLY if the codebase has exactly one obvious pattern for every aspect of the task.
 5. Design Solution - Develop technical approach including architecture decisions and implementation strategy
 6. Define Team Members - Use `ORCHESTRATION_PROMPT` (if provided) to guide team composition. Identify from `.claude/agents/team/*.md` or use `general-purpose`. Document in plan.
 7. Define Step by Step Tasks - Use `ORCHESTRATION_PROMPT` (if provided) to guide task granularity and parallel/sequential structure. Write out tasks with IDs, dependencies, assignments. Document in plan.
