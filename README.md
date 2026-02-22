@@ -47,10 +47,6 @@ flowchart TB
         vd -->|FAIL| builder
         vd -->|PASS| done["Done"]
     end
-
-    subgraph Observability
-        status["status_line.py"]
-    end
 ```
 
 ## Features
