@@ -120,9 +120,7 @@ This means in a monorepo with all three stacks, only the standards matching the 
 
 ## Planning Integration
 
-Context routing works at build time — but the keywords have to come from somewhere. In a multi-agent team workflow, the planner (`/plan_w_team`) generates a `**Stack**` field for each task, and the validator (`validate_plan.py`) enforces that the keywords actually route to sections.
-
-This creates a three-layer architecture:
+In a multi-agent team workflow, the planner generates tasks and the builder executes them. Each task needs the right coding standards loaded — but the builder can't decide this on its own. The planner provides routing hints via a `**Stack**` field, and a validator ensures they're correct before the build starts.
 
 ```
 /plan_w_team (Opus)              → picks keywords from Section Routing Catalog
@@ -132,67 +130,44 @@ validate_plan.py Check 7         → rejects plan if keywords don't route
 context_router.py                → loads matching sections into builder
 ```
 
-### The Problem: Generic Stack Keywords
+### Section Routing Catalog
 
-The first version of `/plan_w_team` had a simple keyword list — just stack names like `Java`, `Spring Boot`, `JPA`. These keywords all mapped to a single section (`java-patterns#basics`), leaving the builder without error handling patterns, testing standards, or framework-specific guidance.
+Every task in a plan has a `**Stack**` field — a string of keywords that tells the context router which sections to load. The planner (`/plan_w_team`) picks these keywords from a catalog embedded in its prompt:
 
-Real example from a favorites feature plan:
+| Section | Trigger keywords | Add when task involves |
+|---------|-----------------|----------------------|
+| `java-patterns#basics` | `java`, `spring`, `controller`, `entity`, `jpa` | Any Java/Spring Boot code |
+| `java-patterns#errors` | `exception`, `error handling`, `controlleradvice` | Exception handling, HTTP errors |
+| `java-testing#http` | `mockmvc`, `resttemplate`, `http test` | REST endpoint testing |
+| `java-testing#mockito` | `mockito`, `spy` | Unit tests with mocking |
+| `react-patterns#core` | `react`, `component`, `hook`, `tsx` | Any React code |
+| `react-patterns#vite` | `vite`, `react-router` | Vite bundler, React Router |
+| ... | | *(18 sections total)* |
 
-```
-Task: "Implement FavoriteController with error handling"
-Stack: "Java Spring Boot JPA controller Lombok Maven"
-                                    ↓
-Routed sections: java-patterns#basics (only 1 section)
-Missing: java-patterns#errors ← no error handling patterns loaded
-```
-
-### The Fix: Section Routing Catalog
-
-`/plan_w_team` now includes a full catalog of 18 sections with their trigger keywords. The LLM picks section-specific keywords based on what each task actually does:
+The planner composes the Stack field by combining stack-level keywords (selects the stack) with section-level keywords (selects specific sections within it):
 
 ```
 Task: "Implement FavoriteController with error handling"
 Stack: "Java Spring Boot controller exception error handling"
-                                    ↓
-Routed sections: java-patterns#basics + java-patterns#errors (2 sections)
+         ↓ stack keywords            ↓ section keywords
+     java-patterns#basics      java-patterns#errors
 ```
 
-The catalog is a table in `plan_w_team.md` that maps each section to its trigger keywords and when to use them. The LLM reads the table and composes the Stack field accordingly.
+### Stack Validation (Check 7)
 
-### Validation: Check 7
-
-`validate_plan.py` Check 7 enforces that every task's Stack field routes to at least one section:
+The plan validator (`validate_plan.py`) runs Check 7 on every task before the plan can be executed. It imports `context_router.route()` and verifies that the Stack field actually produces sections:
 
 ```python
-def check_stack_field(tasks):
-    route_fn = _load_router()
-    for task in tasks:
-        stack = task.get("stack", "")
-        if not stack:
-            errors.append(f"Task has no **Stack** field")
-        elif route_fn:
-            result = route_fn(stack)
-            if not result.get("sections"):
-                errors.append(f"Stack doesn't match any routing keywords")
+result = route_fn(stack)
+if not result.get("sections"):
+    errors.append(f"Stack doesn't match any routing keywords")
 ```
 
-This catches two failure modes:
+Two failure modes caught:
 - **Missing Stack** — task has no `**Stack**` field at all
 - **Dead keywords** — Stack contains words that don't trigger any section
 
-### Before/After Comparison
-
-Tested on the same 7-task plan (favorites feature for a Java + React project):
-
-| Task | Before (generic keywords) | After (catalog keywords) |
-|------|--------------------------|-------------------------|
-| create-foundation | `java-patterns#basics` | `java-patterns#basics` |
-| backend-api | `java-patterns#basics` | `java-patterns#basics` + `#errors` |
-| backend-tests | *(task didn't exist)* | `#basics` + `java-testing#structure` + `#http` + `#mockito` |
-| frontend-context | `react-patterns#core` + `#vite` | `react-patterns#core` + `#vite` |
-| frontend-page | `react-patterns#core` + `#vite` | `react-patterns#core` + `#vite` |
-
-**Result: 3 → 7 unique sections loaded (2.3x more context)**. The builder now receives error handling patterns for API tasks and testing standards (Allure, MockMvc, Mockito) for test tasks.
+This ensures the builder always receives coding standards — a plan with broken routing is rejected at validation, not discovered during build.
 
 ## Reference Files
 
