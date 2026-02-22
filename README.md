@@ -59,6 +59,7 @@ flowchart TB
 | Feature | Summary | Docs |
 |---------|---------|------|
 | **Context Routing** | Keyword-based section routing — 85% token savings, zero LLM cost, <100ms | [docs/context-routing.md](docs/context-routing.md) |
+| **Plan With Team** | Two-round interview + Section Routing Catalog + 7-check validation | [docs/plan-w-team.md](docs/plan-w-team.md) |
 | **Plan Review** | Two-stage validation gate — structural check + 8-criteria Opus critic | [docs/plan-review.md](docs/plan-review.md) |
 | **Validators** | Smart dispatcher runs matching validators per file extension (Java/React/Python) | [docs/validators.md](docs/validators.md) |
 | **Status Line** | Real-time sub-agent monitoring in terminal with 300ms refresh | [docs/status-line.md](docs/status-line.md) |

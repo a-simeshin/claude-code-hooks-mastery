@@ -120,63 +120,7 @@ This means in a monorepo with all three stacks, only the standards matching the 
 
 ## Planning Integration
 
-In a multi-agent team workflow, the planner generates tasks and the builder executes them. Each task needs the right coding standards loaded — but the builder can't decide this on its own. The planner provides routing hints via a `**Stack**` field, and a validator ensures they're correct before the build starts.
-
-```
-/plan_w_team (Opus)              → picks keywords from Section Routing Catalog
-  ↓
-validate_plan.py Check 7         → rejects plan if keywords don't route
-  ↓
-context_router.py                → loads matching sections into builder
-```
-
-### Section Routing Catalog
-
-Every task in a plan has a `**Stack**` field — a string of keywords that tells the context router which sections to load. The planner (`/plan_w_team`) picks these keywords from a catalog embedded in its prompt:
-
-| Section | Trigger keywords | Add when task involves |
-|---------|-----------------|----------------------|
-| `java-patterns#basics` | `java`, `spring`, `controller`, `entity`, `jpa` | Any Java/Spring Boot code |
-| `java-patterns#errors` | `exception`, `error handling`, `controlleradvice` | Exception handling, HTTP errors |
-| `java-testing#http` | `mockmvc`, `resttemplate`, `http test` | REST endpoint testing |
-| `java-testing#mockito` | `mockito`, `spy` | Unit tests with mocking |
-| `react-patterns#core` | `react`, `component`, `hook`, `tsx` | Any React code |
-| `react-patterns#vite` | `vite`, `react-router` | Vite bundler, React Router |
-| ... | | *(18 sections total)* |
-
-The planner composes the Stack field by combining stack-level keywords (selects the stack) with section-level keywords (selects specific sections within it):
-
-```
-Task: "Implement FavoriteController with error handling"
-Stack: "Java Spring Boot controller exception error handling"
-         ↓ stack keywords            ↓ section keywords
-     java-patterns#basics      java-patterns#errors
-```
-
-### Stack Validation (Check 7)
-
-The plan validator (`validate_plan.py`) runs Check 7 on every task before the plan can be executed. It imports `context_router.route()` and verifies that the Stack field actually produces sections:
-
-```python
-result = route_fn(stack)
-if not result.get("sections"):
-    errors.append(f"Stack doesn't match any routing keywords")
-```
-
-Two failure modes caught:
-- **Missing Stack** — task has no `**Stack**` field at all
-- **Dead keywords** — Stack contains words that don't trigger any section
-
-This ensures the builder always receives coding standards — a plan with broken routing is rejected at validation, not discovered during build.
-
-### Requirements Clarification (Two-Round Interview)
-
-Before designing a solution, the planner runs two rounds of clarification via `AskUserQuestion`:
-
-1. **After analyzing requirements** — questions about ambiguities in the user's request: mutually exclusive approaches, missing behavior specs, unclear scope boundaries, priority tradeoffs
-2. **After reading the codebase** — questions about implementation choices visible from the code: which existing pattern to mirror, technical tradeoffs, edge cases
-
-This prevents contradictions in the plan (e.g., simultaneously specifying "409 on duplicate" and "idempotent silently return") by asking the user instead of guessing.
+In a multi-agent team workflow, the planner ([`/plan_w_team`](plan-w-team.md)) provides routing hints via a `**Stack**` field on each task. The validator enforces that keywords route to sections, and the builder receives the right standards at execution time. See [Plan With Team](plan-w-team.md) for details on the catalog, validation, and requirements interview.
 
 ## Reference Files
 
@@ -218,14 +162,10 @@ The Haiku agent was replaced with deterministic keyword matching. Same test: **8
 | [Routing Survey](https://arxiv.org/abs/2502.00409) (Varangot-Reille et al., 2025) | Classifies deterministic keyword matching as the simplest and most reliable routing category. |
 | [RCR-Router](https://arxiv.org/abs/2508.04903) (2025) | Role-aware context routing in multi-agent systems — builder and validator receive different context subsets. Matches our builder/validator split. |
 | [Cursor Rules Study](https://arxiv.org/abs/2512.18925) (Jiang et al., 2025) | 401 repos analyzed: different languages need different rule types, 28.7% of monolithic rules are duplicates. Validates per-stack routing. |
-| [ClarifyGPT](https://dl.acm.org/doi/10.1145/3660810) (FSE 2024) | Asking clarifying questions before code generation: GPT-4 Pass@1 70.96% → 80.80% (+9.84pp). Validates two-round interview in planner. |
-| [TiCoder](https://arxiv.org/abs/2404.10100) (ICSE 2024, Microsoft) | Interactive intent clarification: +45.97pp Pass@1 within 5 interactions. Confirms that even indirect disambiguation massively improves output. |
-| [SpecFix](https://arxiv.org/abs/2505.07270) (ASE 2025) | Detecting and repairing ambiguous specs before code generation: +30.9% Pass@1. Repairs transfer across models (+10.48%). |
 
 ## Key Files
 
 - `.claude/hooks/context_router.py` — keyword-based routing engine
 - `.claude/hooks/section_loader.py` — section extractor (`<!-- section:name -->` markers)
 - `.claude/hooks/validators/validate_plan.py` — plan validator with Check 7 (Stack field enforcement)
-- `.claude/commands/plan_w_team.md` — planner with Section Routing Catalog
 - `.claude/refs/*.md` — reference files with marked sections
