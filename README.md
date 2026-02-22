@@ -55,32 +55,20 @@ flowchart TB
     end
 ```
 
-## What's Different From the Original
-
-This fork extends [@disler](https://github.com/disler)'s original with:
-
-| Area | Original | This Fork |
-|------|----------|-----------|
-| **Plan Validation** | No structural checks | 8 automated checks (unique IDs, dependency DAG, agent types, Stack routing, testing task) |
-| **Testing Strategy** | Not addressed | Enforced 80/15/5 test pyramid (unit / integration-API / UI e2e) with dedicated `write-tests` task |
-| **Context7** | Not integrated | Mandatory live documentation lookup for any library before implementation |
-| **Install** | Manual setup | One-line `curl` install + non-interactive mode for CI/Claude Code |
-| **Validator Dispatch** | Separate hooks per tool | Smart dispatcher by file extension — 57% fewer subprocess calls |
-| **Plan Review** | No pre-build review | Two-stage gate: structural validator + 8-criteria Opus architect critic |
-| **Context Routing** | All refs loaded (~40k tokens) | Keyword-based section routing — loads ~5k focused tokens per task |
-| **Status Line** | Basic | 3 variants (context bar, powerline, cost tracking) with color-coded utilization |
-
 ## Features
 
-| Feature | Summary | Docs |
-|---------|---------|------|
-| **Context Routing** | Keyword-based section routing — 85% token savings, zero LLM cost, <100ms | [docs/context-routing.md](docs/context-routing.md) |
-| **Plan With Team** | Two-round interview + Section Routing Catalog + Testing Strategy + 8-check validation | [docs/plan-w-team.md](docs/plan-w-team.md) |
-| **Testing Strategy** | Enforced 80/15/5 test pyramid — every plan must include a dedicated testing task | — |
-| **Plan Review** | Two-stage validation gate — structural check + 8-criteria Opus critic | [docs/plan-review.md](docs/plan-review.md) |
-| **Context7** | Live documentation lookup for any library via MCP — always up-to-date API references | — |
-| **Validators** | Smart dispatcher runs matching validators per file extension (Java/React/Python) | [docs/validators.md](docs/validators.md) |
-| **Status Line** | Context window progress bar in terminal (3 variants) | [docs/status-line.md](docs/status-line.md) |
+This fork extends [@disler](https://github.com/disler)'s original repository.
+
+| Feature | What it does | vs Original | Docs |
+|---------|-------------|-------------|------|
+| **Context Routing** | Keyword-based section routing — loads only relevant refs per task, zero LLM cost | Original loads all refs into context | [docs/context-routing.md](docs/context-routing.md) |
+| **Plan With Team** | Two-round interview + Section Routing Catalog + Testing Strategy + 8-check validation | No structural validation in original | [docs/plan-w-team.md](docs/plan-w-team.md) |
+| **Testing Strategy** | Enforced 80/15/5 test pyramid (unit / integration-API / UI e2e), dedicated `write-tests` task | Not in original | — |
+| **Plan Review** | Two-stage gate before build: structural validator + 8-criteria Opus architect critic | Not in original | [docs/plan-review.md](docs/plan-review.md) |
+| **Context7** | Mandatory live documentation lookup for any library via MCP | Not in original | — |
+| **Validators** | Smart dispatcher runs matching validators per file extension (Java/React/Python) | Separate hooks per tool in original | [docs/validators.md](docs/validators.md) |
+| **Status Line** | Context window progress bar (3 variants: usage bar, powerline, cost tracking) | Basic in original | [docs/status-line.md](docs/status-line.md) |
+| **Install / Uninstall** | One-line `curl` install + non-interactive mode for CI/Claude Code | Manual setup in original | — |
 
 ## Commands
 
