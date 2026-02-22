@@ -58,7 +58,6 @@ flowchart TB
 
 | Feature | Summary | Docs |
 |---------|---------|------|
-| **Agents** | Builder (Opus), Validator (Sonnet), Plan-Reviewer (Opus), Monitor (Haiku) | [docs/agents.md](docs/agents.md) |
 | **Context Routing** | Keyword-based section routing — 85% token savings, zero LLM cost, <100ms | [docs/context-routing.md](docs/context-routing.md) |
 | **Plan Review** | Two-stage validation gate — structural check + 8-criteria Opus critic | [docs/plan-review.md](docs/plan-review.md) |
 | **Validators** | Smart dispatcher runs matching validators per file extension (Java/React/Python) | [docs/validators.md](docs/validators.md) |
