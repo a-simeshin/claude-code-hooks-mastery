@@ -62,7 +62,6 @@ flowchart TB
 | **validator** | Sonnet | Read-only verification — runs checks, reads files, never modifies |
 | **plan-reviewer** | Opus | Critic agent — reviews plans against 8 criteria before execution |
 | **monitor** | Haiku | Observes parallel sub-agents, reports status every 10 seconds |
-| **context-router** | Haiku | Semantic task analysis (fallback for keyword router) |
 | **meta-agent** | — | Generates new agent configuration files from descriptions |
 
 ## Context Routing
