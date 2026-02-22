@@ -68,19 +68,17 @@ echo ""
 # 1. Status Line
 # ─────────────────────────────────────────────────────────────
 echo "Status Line options:"
-echo "  1) v6 - Context window usage bar (default)"
+echo "  1) Context window usage bar (default)"
 echo "  2) v9 - Minimal powerline style"
 echo "  3) v5 - Cost tracking"
-echo "  4) v3 - Agent sessions with history"
-echo "  5) Disable"
-read -p "Choose [1-5, default=1]: " STATUS_CHOICE </dev/tty
+echo "  4) Disable"
+read -p "Choose [1-4, default=1]: " STATUS_CHOICE </dev/tty
 
 case $STATUS_CHOICE in
     2) STATUS_LINE="status_line_v9.py" ;;
     3) STATUS_LINE="status_line_v5.py" ;;
-    4) STATUS_LINE="status_line_v3.py" ;;
-    5) STATUS_LINE="" ;;
-    *) STATUS_LINE="status_line_v6.py" ;;
+    4) STATUS_LINE="" ;;
+    *) STATUS_LINE="status_line.py" ;;
 esac
 
 # ─────────────────────────────────────────────────────────────
@@ -114,11 +112,11 @@ if [ -z "$STATUS_LINE" ]; then
     # Remove statusLine section
     sed -i.bak '/"statusLine"/,/^  },/d' "$SETTINGS_FILE" && rm -f "$SETTINGS_FILE.bak"
     echo "  Status Line: disabled"
-elif [ "$STATUS_LINE" != "status_line_v6.py" ]; then
-    sed -i.bak "s/status_line_v6.py/$STATUS_LINE/g" "$SETTINGS_FILE" && rm -f "$SETTINGS_FILE.bak"
+elif [ "$STATUS_LINE" != "status_line.py" ]; then
+    sed -i.bak "s/status_line\.py/$STATUS_LINE/g" "$SETTINGS_FILE" && rm -f "$SETTINGS_FILE.bak"
     echo "  Status Line: $STATUS_LINE"
 else
-    echo "  Status Line: status_line_v6.py (default)"
+    echo "  Status Line: status_line.py (default)"
 fi
 
 # TTS
