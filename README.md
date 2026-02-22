@@ -49,7 +49,7 @@ flowchart TB
     end
 
     subgraph Observability
-        status["status_line_v10.py"]
+        status["status_line.py"]
     end
 ```
 
