@@ -16,6 +16,7 @@ Checks:
 4. No circular dependencies (DFS with coloring)
 5. Agent Types exist in `.claude/agents/team/*.md` (+ built-in types)
 6. Acceptance Criteria not empty
+7. Every task has a **Stack** field with keywords that route to context sections
 
 Exit codes:
 - 0: Validation passed
@@ -202,6 +203,11 @@ def parse_plan(content: str) -> dict:
             if at:
                 task["agent_type"] = at.group(1).strip().strip('`"')
 
+            # Extract Stack
+            st = re.search(r'\*\*Stack\*\*:\s*(.+)', section)
+            if st:
+                task["stack"] = st.group(1).strip().strip('`"')
+
             if "id" in task:
                 result["tasks"].append(task)
 
@@ -323,6 +329,50 @@ def check_agent_types(tasks: list[dict], team_dir: str) -> list[str]:
     return errors
 
 
+def _load_router():
+    """Try to import context_router.route() for Stack keyword validation."""
+    try:
+        router_path = Path(__file__).parent.parent / "context_router.py"
+        if not router_path.exists():
+            return None
+        import importlib.util
+        spec = importlib.util.spec_from_file_location("context_router", str(router_path))
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        return module.route
+    except Exception:
+        return None
+
+
+def check_stack_field(tasks: list[dict]) -> list[str]:
+    """Check 7: Every task has a Stack field with keywords that actually route."""
+    errors = []
+    route_fn = _load_router()
+
+    for task in tasks:
+        tid = task.get("id", "?")
+        stack = task.get("stack", "")
+
+        if not stack or stack.lower() in ("none", "-", "n/a", ""):
+            errors.append(
+                f"Task `{tid}` has no **Stack** field — "
+                "builder won't load coding standards via context routing"
+            )
+            continue
+
+        # If router is available, verify keywords actually produce sections
+        if route_fn:
+            result = route_fn(stack)
+            if not result.get("sections"):
+                errors.append(
+                    f"Task `{tid}` Stack \"{stack}\" doesn't match any routing keywords. "
+                    "Use: Java, Spring Boot, JPA, Testcontainers, MockMvc, Mockito, "
+                    "React, Next.js, Vite, Python, FastAPI, pytest"
+                )
+
+    return errors
+
+
 def check_acceptance_criteria(criteria_text: str) -> list[str]:
     """Check 6: Acceptance Criteria not empty."""
     errors = []
@@ -391,6 +441,12 @@ def validate_plan(filepath: str, team_dir: str) -> tuple[bool, str]:
         logger.warning(f"Check 6 (criteria): {len(errs)} errors")
     all_errors.extend(errs)
 
+    # Check 7: Stack field with valid routing keywords
+    errs = check_stack_field(plan["tasks"])
+    if errs:
+        logger.warning(f"Check 7 (stack field): {len(errs)} errors")
+    all_errors.extend(errs)
+
     if all_errors:
         error_list = "\n".join(f"  - {e}" for e in all_errors)
         msg = (
@@ -401,7 +457,7 @@ def validate_plan(filepath: str, team_dir: str) -> tuple[bool, str]:
         logger.warning(f"FAIL: {len(all_errors)} errors total")
         return False, msg
 
-    msg = f"Plan '{filepath}' passed all 6 structural checks ({len(plan['tasks'])} tasks validated)"
+    msg = f"Plan '{filepath}' passed all 7 structural checks ({len(plan['tasks'])} tasks validated)"
     logger.info(f"PASS: {msg}")
     return True, msg
 

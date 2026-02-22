@@ -60,11 +60,41 @@ GENERAL_PURPOSE_AGENT: `general-purpose`
 - Include code examples or pseudo-code where appropriate to clarify complex concepts
 - Consider edge cases, error handling, and scalability concerns
 - Understand your role as the team lead. Refer to the `Team Orchestration` section for more details.
-- **CRITICAL — Context Routing**: Every task MUST include a `**Stack**` field with explicit technology keywords. The builder agent uses keyword-based context routing to load coding standards — without these keywords, the agent works without project standards. Use keywords from this list:
-  - **Java**: `Java`, `Spring`, `Spring Boot`, `JPA`, `controller`, `entity`, `Lombok`, `Maven`
-  - **Java testing**: `Testcontainers`, `MockMvc`, `Mockito`, `Kafka test`, `Selenide`, `JaCoCo`, `integration test`
-  - **React**: `React`, `component`, `hook`, `tsx`, `Next.js`, `Vite`, `React Router`
-  - **Python**: `Python`, `FastAPI`, `Pydantic`, `pytest`, `asyncio`, `uvicorn`
+- **CRITICAL — Context Routing**: Every task MUST include a `**Stack**` field with keywords from the **Section Routing Catalog** below. The builder agent uses keyword-based context routing to load coding standards. Without correct keywords, the builder works without project standards.
+  - Always include at least one **stack keyword** (Java/React/Python) to select the correct stack
+  - Then add **section keywords** matching what the task actually does (error handling, testing, etc.)
+  - Example: a task creating a Spring controller with error handling → `Stack: Java Spring Boot controller exception error handling`
+  - Example: a task writing MockMvc integration tests → `Stack: Java MockMvc integration test Testcontainers`
+  - The Stop hook validator will reject plans where Stack keywords don't route to any section
+
+#### Section Routing Catalog
+
+Pick keywords from the **Trigger keywords** column. Each keyword you include loads the corresponding section into the builder's context.
+
+| Section | Trigger keywords | Add when task involves |
+|---------|-----------------|----------------------|
+| **Java** | | |
+| `java-patterns#basics` | `java`, `spring`, `controller`, `entity`, `jpa`, `maven`, `lombok` | Any Java/Spring Boot code |
+| `java-patterns#errors` | `exception`, `error handling`, `controlleradvice`, `404`, `400`, `500` | Exception classes, @ControllerAdvice, HTTP error responses |
+| `java-patterns#java17` | `record`, `pattern matching`, `switch expression`, `text block`, `sealed` | Java 17 language features |
+| `java-patterns#java21` | `virtual thread`, `sequenced collection` | Java 21 language features |
+| **Java Testing** | | |
+| `java-testing#structure` | `assertj`, `allure`, `test naming`, `test structure` | Test organization, naming, Allure annotations |
+| `java-testing#integration` | `testcontainers`, `integration test`, `podman` | Integration tests with containers |
+| `java-testing#http` | `mockmvc`, `resttemplate`, `http test` | HTTP/REST endpoint testing |
+| `java-testing#kafka` | `kafka test`, `consumer test`, `producer test` | Kafka integration testing |
+| `java-testing#jdbc` | `database test`, `repository test`, `jdbc test` | Database/repository testing |
+| `java-testing#mockito` | `mockito`, `spy` | Unit tests with mocking |
+| `java-testing#e2e` | `selenide`, `e2e`, `page object` | End-to-end browser testing |
+| `java-testing#maven` | `surefire`, `failsafe`, `jacoco` | Maven test plugins, coverage |
+| **React** | | |
+| `react-patterns#core` | `react`, `component`, `hook`, `useState`, `useEffect`, `tsx` | Any React code |
+| `react-patterns#nextjs` | `next.js`, `server component`, `app router`, `server action` | Next.js App Router features |
+| `react-patterns#vite` | `vite`, `react-router`, `code splitting` | Vite bundler, React Router |
+| **Python** | | |
+| `python-patterns#core` | `python`, `typing`, `dataclass`, `asyncio`, `pathlib` | Any Python code |
+| `python-patterns#fastapi` | `fastapi`, `pydantic`, `apirouter`, `depends`, `uvicorn` | FastAPI endpoints, Pydantic models |
+| `python-patterns#testing` | `pytest`, `fixture`, `parametrize`, `conftest`, `httpx` | Python testing |
 
 ### Team Orchestration
 
