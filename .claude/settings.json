@@ -142,17 +142,6 @@
         ]
       }
     ],
-    "SubagentStart": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "uv run --no-project $CLAUDE_PROJECT_DIR/.claude/hooks/subagent_start.py"
-          }
-        ]
-      }
-    ],
     "Setup": [
       {
         "matcher": "",

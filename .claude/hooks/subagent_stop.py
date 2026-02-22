@@ -8,7 +8,6 @@
 # ///
 
 import argparse
-import fcntl
 import json
 import os
 import sys
@@ -211,28 +210,6 @@ def main() -> None:
         # Ensure log directory exists
         log_dir = os.path.join(os.getcwd(), "logs")
         os.makedirs(log_dir, exist_ok=True)
-        log_path = os.path.join(log_dir, "subagent_stop.json")
-
-        # Add timestamp for duration calculation (matches subagent_start.py)
-        input_data["logged_at"] = datetime.now().isoformat()
-
-        # Atomic read-append-write with file locking (prevents race condition)
-        fd = os.open(log_path, os.O_RDWR | os.O_CREAT, 0o644)
-        try:
-            fcntl.flock(fd, fcntl.LOCK_EX)
-            with os.fdopen(os.dup(fd), 'r+') as f:
-                content = f.read()
-                try:
-                    log_data = json.loads(content) if content.strip() else []
-                except (json.JSONDecodeError, ValueError):
-                    log_data = []
-                log_data.append(input_data)
-                f.seek(0)
-                f.truncate()
-                json.dump(log_data, f, indent=2)
-        finally:
-            fcntl.flock(fd, fcntl.LOCK_UN)
-            os.close(fd)
 
         # Handle --chat switch (same as stop.py)
         if args.chat and 'transcript_path' in input_data:
