@@ -266,13 +266,26 @@ TaskOutput({
 IMPORTANT: **PLANNING ONLY** - Do not execute, build, or deploy. Output is a plan document.
 
 1. Analyze Requirements - Parse the USER_PROMPT to understand the core problem and desired outcome
-2. Understand Codebase - Without subagents, directly understand existing patterns, architecture, and relevant files
-3. Design Solution - Develop technical approach including architecture decisions and implementation strategy
-4. Define Team Members - Use `ORCHESTRATION_PROMPT` (if provided) to guide team composition. Identify from `.claude/agents/team/*.md` or use `general-purpose`. Document in plan.
-5. Define Step by Step Tasks - Use `ORCHESTRATION_PROMPT` (if provided) to guide task granularity and parallel/sequential structure. Write out tasks with IDs, dependencies, assignments. Document in plan.
-6. Generate Filename - Create a descriptive kebab-case filename based on the plan's main topic
-7. Save Plan - Write the plan to `PLAN_OUTPUT_DIRECTORY/<filename>.md`
-8. Save & Report - Follow the `Report` section to write the plan to `PLAN_OUTPUT_DIRECTORY/<filename>.md` and provide a summary of key components
+2. **Clarify Requirements** — Identify ambiguities, contradictions, and unclear areas in the USER_PROMPT. Use `AskUserQuestion` to ask about:
+   - Mutually exclusive approaches (e.g., "return 409 or silently succeed on duplicate?")
+   - Missing behavior specifications (e.g., "what happens when unauthenticated user clicks X?")
+   - Unclear scope boundaries (e.g., "should admin panel also show this data?")
+   - Priority tradeoffs (e.g., "optimize for simplicity or for performance?")
+   - The more ambiguities the task has, the more questions you should ask. Complex features may need 3-5 questions. Simple fixes may need 0.
+   - Do NOT proceed with assumptions on non-obvious choices — ask the user instead.
+   - Do NOT ask about things you can determine from the codebase — save those for step 4.
+3. Understand Codebase - Without subagents, directly understand existing patterns, architecture, and relevant files
+4. **Clarify Implementation** — Now that you know the codebase, ask about implementation-specific ambiguities via `AskUserQuestion`:
+   - Existing patterns that could apply in multiple ways (e.g., "mirror CartService or create a different pattern?")
+   - Technical tradeoffs visible from the code (e.g., "denormalized counter vs. COUNT query — codebase uses both")
+   - Edge cases discovered in the code (e.g., "existing SecurityConfig has catch-all — add explicit rule or rely on it?")
+   - Skip this step if all implementation choices are clear from the codebase patterns.
+5. Design Solution - Develop technical approach including architecture decisions and implementation strategy
+6. Define Team Members - Use `ORCHESTRATION_PROMPT` (if provided) to guide team composition. Identify from `.claude/agents/team/*.md` or use `general-purpose`. Document in plan.
+7. Define Step by Step Tasks - Use `ORCHESTRATION_PROMPT` (if provided) to guide task granularity and parallel/sequential structure. Write out tasks with IDs, dependencies, assignments. Document in plan.
+8. Generate Filename - Create a descriptive kebab-case filename based on the plan's main topic
+9. Save Plan - Write the plan to `PLAN_OUTPUT_DIRECTORY/<filename>.md`
+10. Save & Report - Follow the `Report` section to write the plan to `PLAN_OUTPUT_DIRECTORY/<filename>.md` and provide a summary of key components
 
 ## Plan Format
 
