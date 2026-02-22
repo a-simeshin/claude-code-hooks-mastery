@@ -22,7 +22,7 @@ curl -fsSL https://raw.githubusercontent.com/a-simeshin/claude-code-hooks-master
 ```mermaid
 flowchart TB
     subgraph Commands
-        plan["/plan"]
+        plan["/plan_w_team"]
         smart["/smart_build"]
         build["/build"]
     end
