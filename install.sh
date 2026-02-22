@@ -64,6 +64,14 @@ echo ""
 echo -e "${GREEN}Configuration${NC}"
 echo ""
 
+# Detect interactive TTY
+if [ -t 0 ] && [ -e /dev/tty ]; then
+    INTERACTIVE=true
+else
+    INTERACTIVE=false
+    echo -e "${YELLOW}Non-interactive mode: using defaults (status=1, tts=off, agentic=off)${NC}"
+fi
+
 # ─────────────────────────────────────────────────────────────
 # 1. Status Line
 # ─────────────────────────────────────────────────────────────
@@ -72,7 +80,11 @@ echo "  1) Context window usage bar (default)"
 echo "  2) v9 - Minimal powerline style"
 echo "  3) v5 - Cost tracking"
 echo "  4) Disable"
-read -p "Choose [1-4, default=1]: " STATUS_CHOICE </dev/tty
+if [ "$INTERACTIVE" = true ]; then
+    read -p "Choose [1-4, default=1]: " STATUS_CHOICE </dev/tty
+else
+    STATUS_CHOICE="${STATUS_LINE_CHOICE:-1}"
+fi
 
 case $STATUS_CHOICE in
     2) STATUS_LINE="status_line_v9.py" ;;
@@ -85,8 +97,12 @@ esac
 # 2. TTS Notifications
 # ─────────────────────────────────────────────────────────────
 echo ""
-read -p "Enable TTS notifications? (requires ElevenLabs/OpenAI) [y/N]: " -n 1 -r TTS_CHOICE </dev/tty
-echo
+if [ "$INTERACTIVE" = true ]; then
+    read -p "Enable TTS notifications? (requires ElevenLabs/OpenAI) [y/N]: " -n 1 -r TTS_CHOICE </dev/tty
+    echo
+else
+    TTS_CHOICE="${TTS_ENABLED:-n}"
+fi
 if [[ $TTS_CHOICE =~ ^[Yy]$ ]]; then
     TTS_ENABLED=true
 else
@@ -98,8 +114,12 @@ fi
 # ─────────────────────────────────────────────────────────────
 echo ""
 echo -e "${YELLOW}Agentic mode runs without permission prompts.${NC}"
-read -p "Start Claude Code with --dangerously-skip-permissions? [y/N]: " -n 1 -r AGENTIC_CHOICE </dev/tty
-echo
+if [ "$INTERACTIVE" = true ]; then
+    read -p "Start Claude Code with --dangerously-skip-permissions? [y/N]: " -n 1 -r AGENTIC_CHOICE </dev/tty
+    echo
+else
+    AGENTIC_CHOICE="${AGENTIC_MODE:-n}"
+fi
 
 # ─────────────────────────────────────────────────────────────
 # Apply configuration
