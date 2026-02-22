@@ -21,6 +21,8 @@ flowchart TD
 
 The planner asks clarifying questions when it detects ambiguities — not about everything, but about every point where two or more valid interpretations exist or where the prompt is underspecified.
 
+The two rounds are separated by codebase reading — this injects new information between rounds and keeps each round focused on what's knowable at that stage.
+
 ### Round 1: After Analyzing Requirements
 
 Questions about ambiguities in the user's request — before reading any code. Ask when:
@@ -41,6 +43,17 @@ Questions about implementation choices visible from the code. Ask when:
 - **Discovered edge case** — reading the code revealed a scenario the prompt didn't address
 
 Skip a round entirely if every choice has a single obvious answer.
+
+### Why Two Rounds, Not More
+
+Research on multi-turn LLM interactions shows a consistent pattern: large gains in early interactions, diminishing returns by turns 3-5, and risk of degradation beyond that.
+
+- **TiCoder** (Microsoft, ICSE 2024): m=1 gives +19pp, m=2 gives +7pp, m=3 gives +2pp. Plateau after 3 interactions.
+- **LLMs Get Lost in Multi-Turn Conversation** (Microsoft, 2025): 39% average performance degradation in multi-turn vs single-turn across all models tested. Consolidating information into fewer, richer turns outperforms distributing across many.
+- **Another Turn, Better Output?** (NeurIPS 2025): targeted feedback ("denormalized counter vs COUNT query?") sustains improvement; vague feedback ("anything else?") plateaus or reverses quality.
+- **Information Gain per Turn** (NeurIPS 2025): information gain decays per turn without injection of new external data — which is why Round 2 works: reading the codebase between rounds injects new information.
+
+Two rounds with new information between them is the sweet spot: enough to resolve ambiguities, short enough to avoid context degradation.
 
 ## Section Routing Catalog
 
@@ -118,9 +131,12 @@ The generated plan includes these sections:
 
 | Research | Direct relevance |
 |----------|-----------------|
-| [ClarifyGPT](https://dl.acm.org/doi/10.1145/3660810) (FSE 2024) | Asking clarifying questions before code generation: GPT-4 Pass@1 +9.84pp. Validates two-round interview. |
-| [TiCoder](https://arxiv.org/abs/2404.10100) (ICSE 2024, Microsoft) | Interactive intent clarification: +45.97pp Pass@1 within 5 interactions. |
-| [SpecFix](https://arxiv.org/abs/2505.07270) (ASE 2025) | Repairing ambiguous specs before generation: +30.9% Pass@1. Transfers across models. |
+| [ClarifyGPT](https://dl.acm.org/doi/10.1145/3660810) (FSE 2024) | Detect ambiguities → ask targeted questions → GPT-4 Pass@1 +9.84pp. Validates detect-then-ask approach. |
+| [TiCoder](https://arxiv.org/abs/2404.10100) (ICSE 2024, Microsoft) | +19pp at m=1, +7pp at m=2, +2pp at m=3, plateau after 3. Validates diminishing returns curve. |
+| [SpecFix](https://arxiv.org/abs/2505.07270) (ASE 2025) | Repairing ambiguous specs before generation: +30.9% Pass@1. Repairs transfer across models. |
+| [LLMs Get Lost in Multi-Turn](https://arxiv.org/abs/2505.06120) (Microsoft, 2025) | 39% degradation in multi-turn. Consolidating into fewer richer turns > many thin turns. Validates two rounds, not five. |
+| [Another Turn, Better Output?](https://arxiv.org/abs/2509.06770) (NeurIPS 2025) | Targeted feedback sustains gains; vague feedback plateaus or reverses. Validates specific questions over open-ended. |
+| [Info Gain per Turn](https://openreview.net/pdf/2cb74ae648f650e37d77885eb6ef22c93d1860dc.pdf) (NeurIPS 2025) | IGT decays without new information injection. Validates codebase reading between Round 1 and Round 2. |
 
 ## Key Files
 
