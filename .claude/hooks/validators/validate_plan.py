@@ -17,6 +17,7 @@ Checks:
 5. Agent Types exist in `.claude/agents/team/*.md` (+ built-in types)
 6. Acceptance Criteria not empty
 7. Every task has a **Stack** field with keywords that route to context sections
+8. A dedicated testing task exists (Task ID contains "test")
 
 Exit codes:
 - 0: Validation passed
@@ -383,10 +384,27 @@ def check_acceptance_criteria(criteria_text: str) -> list[str]:
     return errors
 
 
+def check_testing_task_exists(tasks: list[dict]) -> list[str]:
+    """Check 8: A dedicated testing task exists before validate-all."""
+    errors = []
+    test_task_found = False
+    for task in tasks:
+        tid = task.get("id", "").lower()
+        if "test" in tid and tid != "validate-all":
+            test_task_found = True
+            break
+    if not test_task_found:
+        errors.append(
+            "No dedicated testing task found — plan must include a task with 'test' in its Task ID "
+            "(e.g., 'write-tests', 'backend-tests') before the final validation task"
+        )
+    return errors
+
+
 # ── Main Validation ──
 
 def validate_plan(filepath: str, team_dir: str) -> tuple[bool, str]:
-    """Run all 6 checks on a plan file."""
+    """Run all 8 checks on a plan file."""
     logger.info(f"Validating plan: {filepath}")
 
     try:
@@ -447,6 +465,12 @@ def validate_plan(filepath: str, team_dir: str) -> tuple[bool, str]:
         logger.warning(f"Check 7 (stack field): {len(errs)} errors")
     all_errors.extend(errs)
 
+    # Check 8: Dedicated testing task exists
+    errs = check_testing_task_exists(plan["tasks"])
+    if errs:
+        logger.warning(f"Check 8 (testing task): {len(errs)} errors")
+    all_errors.extend(errs)
+
     if all_errors:
         error_list = "\n".join(f"  - {e}" for e in all_errors)
         msg = (
@@ -457,7 +481,7 @@ def validate_plan(filepath: str, team_dir: str) -> tuple[bool, str]:
         logger.warning(f"FAIL: {len(all_errors)} errors total")
         return False, msg
 
-    msg = f"Plan '{filepath}' passed all 7 structural checks ({len(plan['tasks'])} tasks validated)"
+    msg = f"Plan '{filepath}' passed all 8 structural checks ({len(plan['tasks'])} tasks validated)"
     logger.info(f"PASS: {msg}")
     return True, msg
 

@@ -20,6 +20,7 @@ hooks:
             --contains '## Objective'
             --contains '## Relevant Files'
             --contains '## Step by Step Tasks'
+            --contains '## Testing Strategy'
             --contains '## Acceptance Criteria'
             --contains '## Team Orchestration'
             --contains '### Team Members'
@@ -60,6 +61,7 @@ GENERAL_PURPOSE_AGENT: `general-purpose`
 - Include code examples or pseudo-code where appropriate to clarify complex concepts
 - Consider edge cases, error handling, and scalability concerns
 - Understand your role as the team lead. Refer to the `Team Orchestration` section for more details.
+- **CRITICAL — Testing Strategy**: Every plan MUST include a `## Testing Strategy` section defining the test pyramid for this feature. Follow the **80/15/5 ratio**: 80% unit tests, 15% integration/API tests, 5% UI e2e tests. A dedicated testing task MUST exist before the final validation task. Each implementation task should note what test coverage it requires in the `**Tests**` field.
 - **CRITICAL — Context Routing**: Every task MUST include a `**Stack**` field with keywords from the **Section Routing Catalog** below. The builder agent uses keyword-based context routing to load coding standards. Without correct keywords, the builder works without project standards.
   - Always include at least one **stack keyword** (Java/React/Python) to select the correct stack
   - Then add **section keywords** matching what the task actually does (error handling, testing, etc.)
@@ -284,11 +286,12 @@ IMPORTANT: **PLANNING ONLY** - Do not execute, build, or deploy. Output is a pla
    - Do NOT ask about things where the codebase has exactly one established pattern — just follow it.
    - Skip this step entirely if every implementation choice has a single obvious answer from the code.
 5. Design Solution - Develop technical approach including architecture decisions and implementation strategy
-6. Define Team Members - Use `ORCHESTRATION_PROMPT` (if provided) to guide team composition. Identify from `.claude/agents/team/*.md` or use `general-purpose`. Document in plan.
-7. Define Step by Step Tasks - Use `ORCHESTRATION_PROMPT` (if provided) to guide task granularity and parallel/sequential structure. Write out tasks with IDs, dependencies, assignments. Document in plan.
-8. Generate Filename - Create a descriptive kebab-case filename based on the plan's main topic
-9. Save Plan - Write the plan to `PLAN_OUTPUT_DIRECTORY/<filename>.md`
-10. Save & Report - Follow the `Report` section to write the plan to `PLAN_OUTPUT_DIRECTORY/<filename>.md` and provide a summary of key components
+6. Define Testing Strategy - Plan the test pyramid: 80% unit tests, 15% integration/API tests, 5% UI e2e tests. Map each test to the source code it validates. Reference existing test patterns from the codebase.
+7. Define Team Members - Use `ORCHESTRATION_PROMPT` (if provided) to guide team composition. Identify from `.claude/agents/team/*.md` or use `general-purpose`. Include a test-builder member. Document in plan.
+8. Define Step by Step Tasks - Use `ORCHESTRATION_PROMPT` (if provided) to guide task granularity and parallel/sequential structure. Write out tasks with IDs, dependencies, assignments, and `**Tests**` field. Always include a dedicated `write-tests` task before `validate-all`. Document in plan.
+9. Generate Filename - Create a descriptive kebab-case filename based on the plan's main topic
+10. Save Plan - Write the plan to `PLAN_OUTPUT_DIRECTORY/<filename>.md`
+11. Save & Report - Follow the `Report` section to write the plan to `PLAN_OUTPUT_DIRECTORY/<filename>.md` and provide a summary of key components
 
 ## Plan Format
 
@@ -351,12 +354,25 @@ Use these files to complete the task:
   - Resume: <default true. This lets the agent continue working with the same context. Pass false if you want to start fresh with a new context.>
 - <continue with additional team members as needed in the same format as above>
 
+## Testing Strategy
+
+Test pyramid ratio: **80% unit / 15% integration-API / 5% UI e2e**
+
+### Unit Tests (80%)
+<list unit tests to write: service logic, utility functions, component rendering, hooks. Each test class mirroring a source class.>
+
+### Integration / API Tests (15%)
+<list integration tests: controller endpoints with MockMvc/@WebMvcTest, repository tests with @DataJpaTest/Testcontainers, API contract tests.>
+
+### UI E2E Tests (5%)
+<list critical user flows to cover with e2e tests: login + action, full CRUD flow, cross-page navigation. Use Selenide/Playwright/Cypress as per project.>
+
 ## Step by Step Tasks
 
 - IMPORTANT: Execute every step in order, top to bottom. Each task maps directly to a `TaskCreate` call.
 - Before you start, run `TaskCreate` to create the initial task list that all team members can see and execute.
 
-<list step by step tasks as h3 headers. Start with foundational work, then core implementation, then validation.>
+<list step by step tasks as h3 headers. Start with foundational work, then core implementation, then testing, then validation.>
 
 ### 1. <First Task Name>
 - **Task ID**: <unique kebab-case identifier, e.g., "setup-database">
@@ -365,6 +381,7 @@ Use these files to complete the task:
 - **Agent Type**: <subagent from TEAM_MEMBERS file or GENERAL_PURPOSE_AGENT if you want to use a general-purpose agent>
 - **Stack**: <technology keywords for context routing, e.g., "Java Spring Boot JPA", "React Next.js", "Python FastAPI pytest">
 - **Parallel**: <true if can run alongside other tasks, false if must be sequential>
+- **Tests**: <what test coverage this task's code needs from Testing Strategy, e.g., "Unit: FavoriteServiceTest — add/remove/check. Integration: FavoriteControllerTest — all endpoints.">
 - <specific action to complete>
 - <specific action to complete>
 
@@ -375,18 +392,34 @@ Use these files to complete the task:
 - **Agent Type**: <subagent type from TEAM_MEMBERS file or GENERAL_PURPOSE_AGENT if you want to use a general-purpose agent>
 - **Stack**: <technology keywords for context routing>
 - **Parallel**: <true/false>
+- **Tests**: <what test coverage this task's code needs>
 - <specific action>
 - <specific action>
 
 ### 3. <Continue Pattern>
 
+### N-1. <Write Tests>
+- **Task ID**: write-tests
+- **Depends On**: <all implementation task IDs>
+- **Assigned To**: <test-builder team member>
+- **Agent Type**: builder
+- **Stack**: <testing-specific keywords, e.g., "Java MockMvc Mockito assertj allure test structure" or "React jest testing-library tsx">
+- **Parallel**: false
+- Write unit tests (80%) as defined in Testing Strategy
+- Write integration/API tests (15%) as defined in Testing Strategy
+- Write UI e2e tests (5%) if defined in Testing Strategy
+- Follow project test patterns (reference existing test files from Relevant Files)
+- Allure/Jest/pytest annotations as per project convention
+
 ### N. <Final Validation Task>
 - **Task ID**: validate-all
-- **Depends On**: <all previous Task IDs>
+- **Depends On**: <all previous Task IDs including write-tests>
 - **Assigned To**: <validator team member>
 - **Agent Type**: <validator agent>
+- **Stack**: <full stack keywords for validation>
 - **Parallel**: false
 - Run all validation commands
+- Verify all tests pass (unit + integration + e2e)
 - Verify acceptance criteria met
 
 <continue with additional tasks as needed. Agent types must exist in .claude/agents/team/*.md>
