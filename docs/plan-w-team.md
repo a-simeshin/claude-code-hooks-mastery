@@ -19,35 +19,28 @@ flowchart TD
 
 ## Two-Round Requirements Interview
 
-Every assumption the planner makes instead of asking is a potential contradiction or missed requirement. The planner interviews the user aggressively — it is always cheaper to ask one extra question than to rewrite a plan or debug a wrong implementation.
+The planner asks clarifying questions when it detects ambiguities — not about everything, but about every point where two or more valid interpretations exist or where the prompt is underspecified.
 
 ### Round 1: After Analyzing Requirements
 
-Questions about ambiguities in the user's request — before reading any code:
+Questions about ambiguities in the user's request — before reading any code. Ask when:
 
-- **Error handling strategy** — "Return error code or silently succeed?"
-- **Behavior per user state** — "What sees unauthorized user? Empty list user? Admin?"
-- **Mutually exclusive approaches** — whenever two valid approaches exist, ask which one
-- **Scope boundaries** — "Only this page or also admin panel?", "Include tests or separate task?"
-- **Priority tradeoffs** — "Simplicity vs performance?", "Full feature or MVP first?"
-- **UI/UX specifics** — "What text for empty state?", "Where exactly to place the button?"
-- **Data model choices** — "Separate table or column on existing?", "Soft delete or hard delete?"
+- **Contradiction detected** — the prompt implies two mutually exclusive approaches
+- **Underspecified behavior** — key user states (unauthorized, empty data, error) are not described
+- **Multiple valid approaches** — present both with pros/cons, let user choose
+- **Design/UX choices** — placement, copy, interaction details that are matters of taste
+- **Scope ambiguity** — unclear whether adjacent features are in or out of scope
 
 ### Round 2: After Reading the Codebase
 
-Questions about implementation choices visible from the code:
+Questions about implementation choices visible from the code. Ask when:
 
-- **Pattern selection** — "Codebase has CartService (optimistic) and OrderService (pessimistic) — which to mirror?"
-- **Technical tradeoffs** — "Denormalized counter vs COUNT query — codebase uses both, which fits here?"
-- **Concurrency** — "JPA read-modify-write or atomic SQL?", "Optimistic or pessimistic locking?"
-- **Integration** — "SecurityConfig has catch-all — add explicit rule for consistency?"
-- **API contract** — "Return void or return updated entity?", "What HTTP status for each case?"
-- **Edge cases from code** — "Existing code handles X this way — same pattern or different?"
+- **Multiple patterns exist** — codebase has more than one way to solve this type of problem
+- **Technical tradeoff with no clear winner** — both options valid, depends on unstated priorities
+- **Integration ambiguity** — new feature fits in more than one place or way
+- **Discovered edge case** — reading the code revealed a scenario the prompt didn't address
 
-The number of questions scales with complexity:
-- **Complex features**: 5-15 questions across multiple `AskUserQuestion` calls per round
-- **Medium tasks**: 3-5 questions per round
-- **Trivial fixes**: 0 questions (skip both rounds)
+Skip a round entirely if every choice has a single obvious answer.
 
 ## Section Routing Catalog
 
