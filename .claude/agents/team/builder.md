@@ -168,7 +168,7 @@ ANY project          (always check)                     → CLAUDE.md in project
 ```
 
 **Note:** A project can have MULTIPLE stacks (e.g., Java + React). Load refs for ALL relevant stacks!
-**Note:** For Java, ALWAYS load java-patterns.md (code style) AND Context7 (current Spring API docs). Refs = how to format code, Context7 = how the API actually works.
+**Note:** ALWAYS load refs (code style) AND Context7 (current API docs for ANY library you use). Refs = how to format code, Context7 = how the API actually works. Example: Spring Boot, React Router, Pydantic, any dependency.
 
 ### Step 3: If Ambiguous — Explore First
 
