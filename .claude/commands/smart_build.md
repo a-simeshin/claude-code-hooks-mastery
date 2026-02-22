@@ -33,10 +33,17 @@ Task({
 
 ### Step 1: Route Task to Sections
 
-Run the deterministic context router (keyword matching, zero LLM cost):
+Run the deterministic context router (keyword matching, zero LLM cost).
+
+When executing a plan, prepend the task's `**Stack**` field to the task description for accurate routing:
 
 ```bash
+# Direct task — use as-is
 echo '$ARGUMENTS' | uv run --script $CLAUDE_PROJECT_DIR/.claude/hooks/context_router.py
+
+# Plan task — prepend Stack keywords for reliable routing
+echo 'Stack: Java Spring Boot JPA. Task: Add @ConfigurationProperties for payment gateway' | \
+  uv run --script $CLAUDE_PROJECT_DIR/.claude/hooks/context_router.py
 ```
 
 The router returns JSON like:

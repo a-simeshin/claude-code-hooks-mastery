@@ -60,6 +60,11 @@ GENERAL_PURPOSE_AGENT: `general-purpose`
 - Include code examples or pseudo-code where appropriate to clarify complex concepts
 - Consider edge cases, error handling, and scalability concerns
 - Understand your role as the team lead. Refer to the `Team Orchestration` section for more details.
+- **CRITICAL — Context Routing**: Every task MUST include a `**Stack**` field with explicit technology keywords. The builder agent uses keyword-based context routing to load coding standards — without these keywords, the agent works without project standards. Use keywords from this list:
+  - **Java**: `Java`, `Spring`, `Spring Boot`, `JPA`, `controller`, `entity`, `Lombok`, `Maven`
+  - **Java testing**: `Testcontainers`, `MockMvc`, `Mockito`, `Kafka test`, `Selenide`, `JaCoCo`, `integration test`
+  - **React**: `React`, `component`, `hook`, `tsx`, `Next.js`, `Vite`, `React Router`
+  - **Python**: `Python`, `FastAPI`, `Pydantic`, `pytest`, `asyncio`, `uvicorn`
 
 ### Team Orchestration
 
@@ -312,6 +317,7 @@ Use these files to complete the task:
 - **Depends On**: <Task ID(s) this depends on, or "none" if no dependencies>
 - **Assigned To**: <team member name from Team Members section>
 - **Agent Type**: <subagent from TEAM_MEMBERS file or GENERAL_PURPOSE_AGENT if you want to use a general-purpose agent>
+- **Stack**: <technology keywords for context routing, e.g., "Java Spring Boot JPA", "React Next.js", "Python FastAPI pytest">
 - **Parallel**: <true if can run alongside other tasks, false if must be sequential>
 - <specific action to complete>
 - <specific action to complete>
@@ -321,6 +327,7 @@ Use these files to complete the task:
 - **Depends On**: <previous Task ID, e.g., "setup-database">
 - **Assigned To**: <team member name>
 - **Agent Type**: <subagent type from TEAM_MEMBERS file or GENERAL_PURPOSE_AGENT if you want to use a general-purpose agent>
+- **Stack**: <technology keywords for context routing>
 - **Parallel**: <true/false>
 - <specific action>
 - <specific action>
