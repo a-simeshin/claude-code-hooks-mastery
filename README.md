@@ -24,7 +24,6 @@ flowchart TB
     subgraph Commands
         plan["/plan_w_team"]
         smart["/smart_build"]
-        build["/build"]
     end
 
     subgraph Planning
