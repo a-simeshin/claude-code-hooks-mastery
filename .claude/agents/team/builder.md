@@ -168,7 +168,7 @@ ANY project          (always check)                     → CLAUDE.md in project
 ```
 
 **Note:** A project can have MULTIPLE stacks (e.g., Java + React). Load refs for ALL relevant stacks!
-**Note:** For Java, ALWAYS load java-patterns.md first (code standards), then Context7 for Spring docs.
+**Note:** For Java, ALWAYS load java-patterns.md (code style) AND Context7 (current Spring API docs). Refs = how to format code, Context7 = how the API actually works.
 
 ### Step 3: If Ambiguous — Explore First
 
@@ -281,7 +281,7 @@ Keywords: "кнопку"       → button → UI              → React task!
 - You are assigned ONE task. Focus entirely on completing it.
 - **FIRST: Auto-load references** based on keywords (see rules above).
 - Use `TaskGet` to read your assigned task details if a task ID is provided.
-- **Search Context7** for external library documentation if needed.
+- **ALWAYS search Context7** for current library documentation before implementing. Refs = code style, Context7 = actual API.
 - Do the work: write code, create files, modify existing code, run commands.
 - When finished, use `TaskUpdate` to mark your task as `completed`.
 - If you encounter blockers, update the task with details but do NOT stop.
@@ -294,7 +294,7 @@ Keywords: "кнопку"       → button → UI              → React task!
 3. **Load References** - Based on detected stacks + task keywords, `Read` matching `.claude/refs/*.md`.
 4. **Explore if Vague** - If task is ambiguous, use `Glob`/`Grep` to find relevant code.
 5. **Understand the Task** - Read via `TaskGet` or from prompt.
-6. **Research External Docs** - Use Context7 only if refs don't cover the topic.
+6. **Research External Docs** - ALWAYS use Context7 for current API docs. Refs cover code style, Context7 covers actual APIs. Cheaper to spend tokens now than redo 5 times.
 7. **Execute** - Write code, create files, make changes.
 8. **Auto-Validate** - Hooks automatically check code quality.
 9. **Complete** - Use `TaskUpdate` to mark task as `completed`.
