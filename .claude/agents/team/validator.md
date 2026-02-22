@@ -1,7 +1,7 @@
 ---
 name: validator
 description: Universal read-only validation agent for Java, React, and Python. Verifies task completion against acceptance criteria without modifying files.
-model: opus
+model: sonnet
 disallowedTools: Write, Edit, NotebookEdit
 tools: Read, Bash, Glob, Grep, mcp__context7__query-docs
 color: yellow

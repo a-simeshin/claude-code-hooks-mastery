@@ -23,6 +23,12 @@ hooks:
             --contains '## Acceptance Criteria'
             --contains '## Team Orchestration'
             --contains '### Team Members'
+        - type: command
+          command: >-
+            uv run $CLAUDE_PROJECT_DIR/.claude/hooks/validators/validate_plan.py
+            --directory specs
+            --extension .md
+            --team-dir $CLAUDE_PROJECT_DIR/.claude/agents/team
 ---
 
 # Plan With Team

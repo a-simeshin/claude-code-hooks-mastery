@@ -8,30 +8,9 @@ hooks:
   PostToolUse:
     - matcher: "Write|Edit"
       hooks:
-        # Python validators
         - type: command
           command: >-
-            uv run $CLAUDE_PROJECT_DIR/.claude/hooks/validators/ruff_validator.py
-        - type: command
-          command: >-
-            uv run $CLAUDE_PROJECT_DIR/.claude/hooks/validators/ty_validator.py
-        - type: command
-          command: >-
-            uv run $CLAUDE_PROJECT_DIR/.claude/hooks/validators/bandit_validator.py
-        # Java validators
-        - type: command
-          command: >-
-            uv run $CLAUDE_PROJECT_DIR/.claude/hooks/validators/spotless_validator.py
-        - type: command
-          command: >-
-            uv run $CLAUDE_PROJECT_DIR/.claude/hooks/validators/maven_compile_validator.py
-        # React/TypeScript validators
-        - type: command
-          command: >-
-            uv run $CLAUDE_PROJECT_DIR/.claude/hooks/validators/eslint_validator.py
-        - type: command
-          command: >-
-            uv run $CLAUDE_PROJECT_DIR/.claude/hooks/validators/tsc_validator.py
+            uv run --script $CLAUDE_PROJECT_DIR/.claude/hooks/validators/validator_dispatcher.py
 ---
 
 # Builder
@@ -130,6 +109,26 @@ Grep("languageVersion", path="build.gradle")
 # This determines which patterns from java-patterns.md to apply!
 ```
 
+**For React projects, detect framework:**
+```python
+# In package.json look for:
+# dependencies: "next" → REACT_FRAMEWORK=nextjs
+# devDependencies: "vite" → REACT_FRAMEWORK=vite
+# only "react" → REACT_FRAMEWORK=none (core patterns only)
+# BOTH "next" AND "vite" → REACT_FRAMEWORK=nextjs (next takes priority)
+Read("package.json") → check dependencies
+```
+
+**For Python projects, detect framework:**
+```python
+# In pyproject.toml look for:
+# [project] dependencies containing "fastapi" → PYTHON_FRAMEWORK=fastapi
+# [tool.poetry.dependencies] containing "fastapi" → PYTHON_FRAMEWORK=fastapi
+# OR check requirements.txt for "fastapi" → PYTHON_FRAMEWORK=fastapi
+# No framework found → PYTHON_FRAMEWORK=none (core patterns only)
+Read("pyproject.toml") or Read("requirements.txt") → check dependencies
+```
+
 **IMPORTANT:** A project can have MULTIPLE stacks! Run ALL Globs, collect ALL results.
 
 ### Step 2: Load References by Stack + Keywords
@@ -153,8 +152,17 @@ HAS_REACT +          react, component, hook, button,    → .claude/refs/react-p
                      ui, dashboard, frontend, form,
                      modal, header, sidebar, tsx
 
+HAS_REACT +          REACT_FRAMEWORK=nextjs            → react-patterns#core + react-patterns#nextjs
+                     REACT_FRAMEWORK=vite              → react-patterns#core + react-patterns#vite
+                     REACT_FRAMEWORK=none              → react-patterns#core
+                     REACT_FRAMEWORK=unknown           → react-patterns#core + react-patterns#nextjs + react-patterns#vite
+
 HAS_PYTHON +         fastapi, endpoint, api,            → .claude/refs/fastapi-patterns.md
                      pydantic, router, uvicorn
+
+HAS_PYTHON +         PYTHON_FRAMEWORK=fastapi           → python-patterns#core + python-patterns#fastapi + python-patterns#testing
+                     PYTHON_FRAMEWORK=none             → python-patterns#core + python-patterns#testing
+                     PYTHON_FRAMEWORK=unknown          → python-patterns#core + python-patterns#fastapi + python-patterns#testing
 
 ANY project          (always check)                     → CLAUDE.md in project root
 ```
@@ -197,6 +205,19 @@ Grep("Dashboard|Metric|Controller")
 │       ├─ "vue"   → HAS_VUE=true
 │       └─ "angular" → HAS_ANGULAR=true
 │
+├─ Step 2a: Determine React framework (if HAS_REACT)
+│   │
+│   └─ Read package.json → check dependencies:
+│       ├─ "next" in dependencies    → REACT_FRAMEWORK=nextjs
+│       ├─ "vite" in devDependencies → REACT_FRAMEWORK=vite
+│       └─ neither                   → REACT_FRAMEWORK=none
+│
+├─ Step 2b: Determine Python framework (if HAS_PYTHON)
+│   │
+│   └─ Read pyproject.toml/requirements.txt:
+│       ├─ "fastapi" found           → PYTHON_FRAMEWORK=fastapi
+│       └─ not found                 → PYTHON_FRAMEWORK=none
+│
 ├─ Step 3: For Java — detect version
 │   │
 │   └─ HAS_JAVA?
@@ -222,6 +243,27 @@ Grep("Dashboard|Metric|Controller")
 │   └─ Glob("**/*.tsx"), Glob("**/*.java") to find relevant code
 │
 └─ NOW implement with full context (respecting JAVA_VERSION)
+```
+
+### Edge Cases for Framework Detection
+
+```
+Monorepo (multiple package.json):
+  └── Use the package.json closest to the file being edited
+      Glob("**/package.json") → pick the one in the same directory tree
+
+Turborepo/Nx workspace:
+  └── Root package.json may not have framework deps
+      Check workspace package.json files, not just root
+
+pyproject.toml formats:
+  ├── [project] dependencies = [...]           — PEP 621
+  ├── [tool.poetry.dependencies]               — Poetry
+  └── requirements.txt (fallback)              — pip
+
+Ambiguous / detection fails:
+  └── Load ALL sections for that stack (core + all frameworks)
+      Better to load extra 200 tokens than miss relevant patterns
 ```
 
 **Example: tutor-library "добавь кнопку logout"**

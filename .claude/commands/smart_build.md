@@ -10,29 +10,57 @@ Build with **semantic context routing** - loads only the sections you need.
 
 ## Workflow
 
-### Step 1: Analyze Task with Context Router
+### Step 0: Plan Review (if argument is a plan file)
 
-Call `@agent-context-router` with the task:
+If `$ARGUMENTS` ends with `.md` and the file exists in `specs/`, this is a **plan execution** request. Run validation before building:
 
+**Structural check:**
+```bash
+uv run --script $CLAUDE_PROJECT_DIR/.claude/hooks/validators/validate_plan.py --file $ARGUMENTS --team-dir $CLAUDE_PROJECT_DIR/.claude/agents/team
 ```
-Task: $ARGUMENTS
+
+**Content review** (spawn plan-reviewer agent):
+```
+Task({
+  subagent_type: "plan-reviewer",
+  description: "Review plan before execution",
+  prompt: "Review the plan at $ARGUMENTS. Check all 8 criteria and return a structured verdict."
+})
 ```
 
-The router will return JSON like:
+- If structural check fails or review verdict is **FAIL** — show issues and ask user to fix, continue, or abort.
+- If both pass — read and execute the plan directly (skip Steps 1-3).
+
+### Step 1: Route Task to Sections
+
+Run the deterministic context router (keyword matching, zero LLM cost):
+
+```bash
+echo '$ARGUMENTS' | uv run --script $CLAUDE_PROJECT_DIR/.claude/hooks/context_router.py
+```
+
+The router returns JSON like:
 ```json
 {
   "sections": ["java-patterns#basics", "java-testing#integration"],
-  "reasoning": "..."
+  "reasoning": "Matched: java, endpoint, error"
 }
 ```
 
 ### Step 2: Load Sections
 
-Run section loader with the router's output:
+Pipe the router output to the section loader:
 
 ```bash
-echo '{"sections": ["java-patterns#basics", "java-testing#integration"]}' | \
-  uv run $CLAUDE_PROJECT_DIR/.claude/hooks/section_loader.py
+echo '$ARGUMENTS' | uv run --script $CLAUDE_PROJECT_DIR/.claude/hooks/context_router.py | \
+  uv run --script $CLAUDE_PROJECT_DIR/.claude/hooks/section_loader.py
+```
+
+Or in two steps if you need to inspect the routing:
+```bash
+ROUTE=$(echo '$ARGUMENTS' | uv run --script $CLAUDE_PROJECT_DIR/.claude/hooks/context_router.py)
+echo "$ROUTE"  # inspect routing decision
+echo "$ROUTE" | uv run --script $CLAUDE_PROJECT_DIR/.claude/hooks/section_loader.py
 ```
 
 ### Step 3: Execute with Focused Context
