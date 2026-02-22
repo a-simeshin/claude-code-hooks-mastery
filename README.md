@@ -65,9 +65,6 @@ flowchart TB
 |---------|-------------|
 | `/plan_w_team` | Create a plan with multi-agent team orchestration |
 | `/smart_build` | Build with context routing + plan review gate |
-| `/build` | Direct build without routing |
-| `/git_status` | Repository status overview |
-| `/question` | Answer questions about the project without coding |
 
 ## Credits
 

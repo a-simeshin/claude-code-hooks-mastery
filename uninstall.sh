@@ -49,11 +49,8 @@ OWNED_FILES=(
     .claude/agents/team/validator.md
     # commands
     .claude/commands/all_tools.md
-    .claude/commands/build.md
-    .claude/commands/git_status.md
     .claude/commands/plan_w_team.md
     .claude/commands/plan.md
-    .claude/commands/question.md
     .claude/commands/smart_build.md
     .claude/commands/update_status_line.md
     # settings
