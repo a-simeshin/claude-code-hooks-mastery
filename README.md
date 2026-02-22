@@ -49,7 +49,6 @@ flowchart TB
     end
 
     subgraph Observability
-        monitor["Monitor (Haiku)"]
         status["status_line_v10.py"]
     end
 ```
@@ -62,7 +61,7 @@ flowchart TB
 | **Plan With Team** | Two-round interview + Section Routing Catalog + 7-check validation | [docs/plan-w-team.md](docs/plan-w-team.md) |
 | **Plan Review** | Two-stage validation gate — structural check + 8-criteria Opus critic | [docs/plan-review.md](docs/plan-review.md) |
 | **Validators** | Smart dispatcher runs matching validators per file extension (Java/React/Python) | [docs/validators.md](docs/validators.md) |
-| **Status Line** | Real-time sub-agent monitoring in terminal with 300ms refresh | [docs/status-line.md](docs/status-line.md) |
+| **Status Line** | Context window progress bar in terminal | [docs/status-line.md](docs/status-line.md) |
 
 ## Commands
 
