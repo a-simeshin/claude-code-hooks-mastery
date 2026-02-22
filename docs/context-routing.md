@@ -2,21 +2,28 @@
 
 ## Problem
 
-You ask Claude Code: *"Add GET /api/tutors/{id} endpoint with 404 handling and integration test"*.
+Claude Code agents have exactly one built-in way to consistently receive project knowledge — `CLAUDE.md`. This file is loaded into every session, every agent, every prompt. It works for small, single-stack projects.
 
-Claude needs to know your project's coding standards — how you handle errors, how you structure tests, what patterns you follow. Without guidance, it writes code based on its training data: generic, inconsistent with your codebase.
+But for a full-stack monorepo with Java + React + Python:
 
-You can write coding standards into `.claude/refs/` files — but then Claude loads **all of them** into context every time. For a Java + React + Python monorepo with 4 ref files, that's ~40,000 tokens of standards loaded even when you're only fixing a typo in one Python file.
+- Java coding standards alone are ~4,200 tokens (Spring Boot patterns, error handling, Java 17/21 features)
+- Java testing patterns — another ~8,600 tokens (Testcontainers, MockMvc, Selenide, JaCoCo)
+- React patterns — ~13,500 tokens (React 19, Next.js 15, Vite, React Router v7)
+- Python patterns — ~12,400 tokens (FastAPI, Pydantic v2, Pytest)
+
+Putting all of this into `CLAUDE.md` means **~40,000 tokens loaded on every single interaction** — even when you're fixing a typo in one Python file. That's expensive, and research shows it actively degrades quality (see [Research](#research) below).
 
 This creates a tradeoff:
 - **No standards** → Claude writes generic code that doesn't match your project
-- **All standards loaded** → 40k tokens burned on every task, most of them irrelevant
+- **Standards in CLAUDE.md** → 40k tokens burned per interaction, most irrelevant, quality degrades from context overload
 
 ## Solution
 
-A deterministic keyword router that reads the task description and loads **only the sections that match**.
+A deterministic keyword router that reads the task description, detects which file types the agent will work with, and loads **only the matching standard sections**.
 
-For the task above, it detects keywords `endpoint`, `404`, `test` and loads exactly 4 sections:
+The key guarantee: **the right standards are always loaded for the right file type**. If the agent is editing `.java` files — it gets Java patterns. If it's working on `.tsx` — it gets React patterns. No manual selection, no guessing, no waste.
+
+For the task *"Add GET /api/tutors/{id} endpoint with 404 handling and integration test"*, the router detects keywords `endpoint`, `404`, `test` and loads exactly 4 sections:
 - `java-patterns#basics` — how you structure Spring controllers
 - `java-patterns#errors` — how you handle 404 with @ControllerAdvice
 - `java-testing#structure` — how you name tests and use AssertJ
@@ -27,17 +34,17 @@ Result: **~5,800 tokens** instead of ~40,000. The builder gets exactly the conte
 ```
 Task: "Add GET /api/tutors/{id} with 404 and integration test"
 
-Without routing:  java-patterns.md (full)     → 4,200 tokens
-                  java-testing.md (full)      → 8,600 tokens
-                  react-patterns.md (full)    → 13,500 tokens  ← irrelevant
-                  python-patterns.md (full)   → 12,400 tokens  ← irrelevant
-                  Total:                        ~40,000 tokens
+CLAUDE.md approach:  java-patterns.md (full)     → 4,200 tokens
+                     java-testing.md (full)      → 8,600 tokens
+                     react-patterns.md (full)    → 13,500 tokens  ← irrelevant
+                     python-patterns.md (full)   → 12,400 tokens  ← irrelevant
+                     Total:                        ~40,000 tokens
 
-With routing:     java-patterns#basics        → 1,800 tokens
-                  java-patterns#errors        → 1,200 tokens
-                  java-testing#structure      → 1,400 tokens
-                  java-testing#http           → 1,400 tokens
-                  Total:                        ~5,800 tokens   (85% savings)
+Context routing:     java-patterns#basics        → 1,800 tokens
+                     java-patterns#errors        → 1,200 tokens
+                     java-testing#structure      → 1,400 tokens
+                     java-testing#http           → 1,400 tokens
+                     Total:                        ~5,800 tokens   (85% savings)
 ```
 
 ## How It Works
@@ -98,7 +105,7 @@ The builder receives focused, relevant context and writes code that matches your
 
 ### Step 3: Framework Auto-Detection
 
-The builder agent also detects project frameworks from config files and adjusts which sections to load:
+The builder agent detects project frameworks from config files and guarantees the correct standards are loaded for each file type:
 
 ```
 pom.xml                       → java-patterns + java-testing
@@ -108,6 +115,8 @@ package.json + "react" only   → react-patterns#core
 pyproject.toml + "fastapi"    → python-patterns#core + #fastapi
 pyproject.toml only           → python-patterns#core
 ```
+
+This means in a monorepo with all three stacks, only the standards matching the current task's file types are loaded — never all at once.
 
 ## Reference Files
 
@@ -138,6 +147,40 @@ The Haiku agent was replaced with deterministic keyword matching. Same test: **8
 |----------|---------|---------------|---------|
 | Haiku LLM router | 1/6 (17%) | $0.0002 | ~800ms |
 | Keyword matching | 8/8 (100%) | $0 | <100ms |
+
+## Research
+
+The approach is supported by recent research on context management for LLM agents:
+
+### Context overload degrades quality
+
+- **Context Rot** ([Chroma Research, 2025](https://research.trychroma.com/context-rot)) — LLM performance degrades as context length increases, even when the relevant information is present. Models have an "attention budget" — every added token depletes it. Accuracy drops from 75% to 55% when relevant content moves deeper into context.
+
+- **Maximum Effective Context Window** ([Paulsen, 2025, arXiv:2509.21361](https://arxiv.org/abs/2509.21361)) — The effective context window is drastically smaller than advertised. Across 11 LLMs, the effective window ranged from 100–2,500 tokens for complex tasks. Our ~5k loaded tokens are near the practical upper bound.
+
+- **SWE-Pruner** ([Yang et al., 2026, arXiv:2601.16746](https://arxiv.org/abs/2601.16746)) — Read-type operations consume 76.1% of total tokens in coding agents. Section-level granularity (our approach) preserves code structure better than token-level pruning, which breaks syntax. Achieves 23–38% token reductions with less than 1% performance drop.
+
+### Routing strategies
+
+- **Routing Survey** ([Varangot-Reille et al., 2025, arXiv:2502.00409](https://arxiv.org/abs/2502.00409)) — Comprehensive survey of routing strategies: similarity-based, supervised, RL-based, generative. Our keyword router is a deterministic similarity-based approach — the simplest and most reliable category. The survey suggests hybrid (keyword + embedding) as the next evolution.
+
+- **RCR-Router** ([arXiv:2508.04903](https://arxiv.org/abs/2508.04903)) — Role-aware context routing for multi-agent systems. Routes different context subsets to agents based on their role (builder vs validator). Reduces token consumption while improving task success rates.
+
+### How coding tools solve this
+
+- **Sourcegraph Cody** ([Hartman et al., 2024, arXiv:2408.05344](https://arxiv.org/abs/2408.05344)) — Production coding assistant using hybrid dense-sparse retrieval. Combines keyword precision with semantic recall. Context quality is the single largest driver of recommendation quality.
+
+- **Cursor Rules Study** ([Jiang et al., 2025, arXiv:2512.18925](https://arxiv.org/abs/2512.18925)) — Analysis of 401 repos with coding standards. 28.7% of rule lines are duplicates. Different languages and domains require different rule types — validating the need for per-stack routing rather than monolithic standards files.
+
+- **Aider** ([aider.chat](https://aider.chat/docs/repomap.html)) — Builds a repository map using tree-sitter + PageRank. Ranks symbols by reference frequency and dynamically fits them into the token budget.
+
+### Compression and optimization
+
+- **LLMLingua-2** ([Jiang et al., Microsoft Research, 2024, arXiv:2403.12968](https://arxiv.org/abs/2403.12968)) — Up to 20x prompt compression with minimal performance loss. Could be applied as a post-routing step to compress loaded sections further.
+
+- **AttentionRAG** ([Fang et al., 2025, arXiv:2503.10720](https://arxiv.org/abs/2503.10720)) — Uses the model's own attention patterns to prune context. Achieves 6.3x compression while maintaining performance. Could validate whether our keyword mappings align with what the model actually attends to.
+
+- **Agentic RAG Survey** ([Singh et al., 2025, arXiv:2501.09136](https://arxiv.org/abs/2501.09136)) — Identifies four patterns for retrieval: reflection, planning, tool use, multi-agent collaboration. Suggests adding a reflection step where the agent can request additional sections if the initial routing was insufficient.
 
 ## Key Files
 
