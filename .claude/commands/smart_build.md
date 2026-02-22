@@ -16,7 +16,7 @@ If `$ARGUMENTS` ends with `.md` and the file exists in `specs/`, this is a **pla
 
 **Structural check:**
 ```bash
-uv run --script $CLAUDE_PROJECT_DIR/.claude/hooks/validators/validate_plan.py --file $ARGUMENTS --team-dir $CLAUDE_PROJECT_DIR/.claude/agents/team
+uv run --script .claude/hooks/validators/validate_plan.py --file $ARGUMENTS --team-dir .claude/agents/team
 ```
 
 **Content review** (spawn plan-reviewer agent):
@@ -39,11 +39,11 @@ When executing a plan, prepend the task's `**Stack**` field to the task descript
 
 ```bash
 # Direct task — use as-is
-echo '$ARGUMENTS' | uv run --script $CLAUDE_PROJECT_DIR/.claude/hooks/context_router.py
+echo '$ARGUMENTS' | uv run --script .claude/hooks/context_router.py
 
 # Plan task — prepend Stack keywords for reliable routing
 echo 'Stack: Java Spring Boot JPA. Task: Add @ConfigurationProperties for payment gateway' | \
-  uv run --script $CLAUDE_PROJECT_DIR/.claude/hooks/context_router.py
+  uv run --script .claude/hooks/context_router.py
 ```
 
 The router returns JSON like:
@@ -59,15 +59,15 @@ The router returns JSON like:
 Pipe the router output to the section loader:
 
 ```bash
-echo '$ARGUMENTS' | uv run --script $CLAUDE_PROJECT_DIR/.claude/hooks/context_router.py | \
-  uv run --script $CLAUDE_PROJECT_DIR/.claude/hooks/section_loader.py
+echo '$ARGUMENTS' | uv run --script .claude/hooks/context_router.py | \
+  uv run --script .claude/hooks/section_loader.py
 ```
 
 Or in two steps if you need to inspect the routing:
 ```bash
-ROUTE=$(echo '$ARGUMENTS' | uv run --script $CLAUDE_PROJECT_DIR/.claude/hooks/context_router.py)
+ROUTE=$(echo '$ARGUMENTS' | uv run --script .claude/hooks/context_router.py)
 echo "$ROUTE"  # inspect routing decision
-echo "$ROUTE" | uv run --script $CLAUDE_PROJECT_DIR/.claude/hooks/section_loader.py
+echo "$ROUTE" | uv run --script .claude/hooks/section_loader.py
 ```
 
 ### Step 3: Execute with Focused Context
