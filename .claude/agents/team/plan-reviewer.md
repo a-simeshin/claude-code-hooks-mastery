@@ -3,7 +3,7 @@ name: plan-reviewer
 description: Senior architect — critical content review of plans before build. Read-only, returns structured PASS/FAIL verdict.
 model: opus
 disallowedTools: Write, Edit, NotebookEdit
-tools: Read, Bash, Glob, Grep
+tools: Read, Bash, Glob, Grep, mcp__serena__find_symbol, mcp__serena__get_symbols_overview, mcp__serena__find_referencing_symbols, mcp__serena__find_referencing_code_snippets, mcp__serena__search_for_pattern, mcp__serena__read_memory, mcp__serena__list_memories
 color: red
 ---
 
@@ -34,7 +34,22 @@ Use Glob and Read to verify assumptions in the plan:
 - Are there existing patterns the plan should follow but doesn't mention?
 - Is the plan modifying the right files for the stated goal?
 
-If Serena MCP tools are available, prefer `find_symbol` and `get_symbols_overview` for verifying that classes, methods, and dependencies mentioned in the plan actually exist. Use `find_referencing_symbols` to check impact of planned changes. If Serena is not available, use Glob/Grep/Read as usual.
+#### Serena Integration (Optional)
+
+If Serena MCP tools are available, **prefer them over Glob/Grep** for codebase verification — they provide semantic understanding, not just text search:
+
+| Review Check | Without Serena | With Serena |
+|---|---|---|
+| Verify class/method exists | `Grep("class UserService")` | `find_symbol(name="UserService")` |
+| Check file structure | `Read("UserService.java")` | `get_symbols_overview(path="UserService.java")` |
+| Assess blast radius | `Grep("addFavorite")` across files | `find_referencing_symbols(symbol="addFavorite")` |
+| Find affected code | Multiple Glob + Grep | `find_referencing_code_snippets(path, line)` |
+| Check patterns/conventions | Skim multiple files | `search_for_pattern(pattern="@Service")` |
+| Read project memory | N/A | `list_memories()` + `read_memory(name="project_overview")` |
+
+**Key advantage for plan review:** Serena understands symbol relationships (inheritance, imports, injection), so you can verify that changing `ServiceA` won't break `ControllerB` — something Grep can't reliably do.
+
+If Serena is not available, fall back to Glob/Grep/Read as usual.
 
 ### Step 3: Load Relevant Standards
 
