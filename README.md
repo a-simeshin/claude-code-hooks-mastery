@@ -66,9 +66,20 @@ This fork extends [@disler](https://github.com/disler)'s original repository.
 | **Testing Strategy** | Enforced 80/15/5 test pyramid (unit / integration-API / UI e2e), dedicated `write-tests` task | Not in original | — |
 | **Plan Review** | Two-stage gate before build: structural validator + 8-criteria Opus architect critic | Not in original | [docs/plan-review.md](docs/plan-review.md) |
 | **Context7** | Mandatory live documentation lookup for any library via MCP | Not in original | — |
+| **Serena** | Optional semantic code navigation via LSP — symbol search, references, type hierarchy | Not in original | — |
 | **Validators** | Smart dispatcher runs matching validators per file extension (Java/React/Python) | Separate hooks per tool in original | [docs/validators.md](docs/validators.md) |
 | **Status Line** | Context window progress bar (3 variants: usage bar, powerline, cost tracking) | Basic in original | [docs/status-line.md](docs/status-line.md) |
 | **Install / Uninstall** | One-line `curl` install + non-interactive mode for CI/Claude Code | Manual setup in original | — |
+
+## MCP Integrations
+
+### [Context7](https://github.com/upstash/context7) (mandatory)
+
+Live documentation lookup for any library. Builder and validator agents query Context7 before implementation to get current API references instead of relying on training data. Covers Spring Boot, React, FastAPI, and any other library.
+
+### [Serena](https://github.com/oraios/serena) (optional)
+
+Semantic code intelligence via Language Server Protocol. When available, all agents prefer Serena's symbol-level navigation (`find_symbol`, `get_symbols_overview`, `find_referencing_symbols`) over Glob/Grep for code exploration. Plan_w_team also uses Serena's `write_memory` / `read_memory` to persist architectural decisions across sessions. If Serena is not configured, agents fall back to Glob/Grep/Read.
 
 ## Commands
 
