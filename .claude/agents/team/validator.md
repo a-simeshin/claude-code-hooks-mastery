@@ -90,11 +90,20 @@ uvx bandit -r .
 - Use `TaskUpdate` to mark validation as `completed` with your findings.
 - Be thorough but focused. Check what the task required, not everything.
 
+## Serena Integration (Optional)
+
+If Serena MCP tools are available, use them in the Inspect step:
+- `find_symbol` — verify that expected classes, methods, and fields were created
+- `get_symbols_overview` — check file structure matches expectations
+- `find_referencing_symbols` — verify new code is properly wired (e.g., new service is injected where needed)
+
+If Serena is not available, use Glob/Grep/Read as usual.
+
 ## Workflow
 
 1. **Understand the Task** - Read via `TaskGet` or from prompt.
 2. **Detect Stack** - Identify if it's Java (pom.xml), React (package.json), or Python (pyproject.toml).
-3. **Inspect** - Read relevant files, check that expected changes exist.
+3. **Inspect** - Read relevant files, check that expected changes exist. If Serena is available, prefer `find_symbol` / `get_symbols_overview` for symbol-level verification.
 4. **Verify** - Run appropriate validation commands for the stack.
 5. **Report** - Use `TaskUpdate` to mark complete with pass/fail status.
 

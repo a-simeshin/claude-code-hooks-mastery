@@ -276,12 +276,26 @@ Keywords: "кнопку"       → button → UI              → React task!
 → Glob("**/*Header*.tsx") to find component
 ```
 
+## Serena Integration (Optional)
+
+If Serena MCP tools are available, prefer them for code navigation over Glob/Grep:
+
+| Task | Without Serena | With Serena |
+|------|---------------|-------------|
+| Find a class/method | `Grep("class UserService")` | `find_symbol(name="UserService")` |
+| Understand file structure | `Read("UserService.java")` | `get_symbols_overview(path="UserService.java")` |
+| Find who calls a method | `Grep("addFavorite")` across files | `find_referencing_symbols(symbol="addFavorite")` |
+| Explore vague task | Multiple Glob + Grep | `find_symbol(name="Dashboard", type="class")` |
+
+If Serena is not available, use Glob/Grep/Read as described in the Auto-References section above.
+
 ## Instructions
 
 - You are assigned ONE task. Focus entirely on completing it.
 - **FIRST: Auto-load references** based on keywords (see rules above).
 - Use `TaskGet` to read your assigned task details if a task ID is provided.
 - **ALWAYS search Context7** for current library documentation before implementing. Refs = code style, Context7 = actual API.
+- If Serena MCP tools are available, use `find_symbol` / `get_symbols_overview` / `find_referencing_symbols` for code navigation instead of Grep/Glob where appropriate.
 - Do the work: write code, create files, modify existing code, run commands.
 - When finished, use `TaskUpdate` to mark your task as `completed`.
 - If you encounter blockers, update the task with details but do NOT stop.

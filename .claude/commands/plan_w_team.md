@@ -267,7 +267,7 @@ TaskOutput({
 
 IMPORTANT: **PLANNING ONLY** - Do not execute, build, or deploy. Output is a plan document.
 
-1. Analyze Requirements - Parse the USER_PROMPT to understand the core problem and desired outcome
+1. Analyze Requirements - Parse the USER_PROMPT to understand the core problem and desired outcome. If Serena MCP tools are available, call `read_memory` and `list_memories` to check for existing knowledge about related features or past decisions.
 2. **Clarify Requirements (Interview Round 1)** — Analyze the USER_PROMPT for ambiguities before reading the codebase. Ask when:
    - **Contradiction detected** — the prompt contains two statements that conflict or imply mutually exclusive approaches (e.g., "return 409" and "silently succeed" for the same case)
    - **Underspecified behavior** — the prompt describes a feature but not what happens in key user states (unauthorized, empty data, error). If the prompt says "user clicks heart" but doesn't say what unauthorized user sees — ask.
@@ -277,7 +277,7 @@ IMPORTANT: **PLANNING ONLY** - Do not execute, build, or deploy. Output is a pla
    - Do NOT ask about things that have exactly one obvious answer from the prompt.
    - Do NOT ask about implementation details you can determine from the codebase — save those for step 4.
    - Use `AskUserQuestion` (supports 1-4 questions per call, call multiple times if needed).
-3. Understand Codebase - Without subagents, directly understand existing patterns, architecture, and relevant files
+3. Understand Codebase - Without subagents, directly understand existing patterns, architecture, and relevant files. If Serena MCP tools are available, prefer `find_symbol` and `get_symbols_overview` for navigating classes, methods, and dependencies instead of manual Glob/Grep. If Serena is not available, use Glob/Grep/Read as usual.
 4. **Clarify Implementation (Interview Round 2)** — Now that you know the codebase, check for implementation-specific ambiguities. Ask when:
    - **Multiple patterns exist** — the codebase has more than one way to solve this type of problem, and it's not clear which fits better (e.g., "CartService uses optimistic UI, OrderService uses server-confirmed — which pattern for favorites?"). Present both with pros/cons.
    - **Technical tradeoff with no clear winner** — both options are valid and the choice depends on priorities the user hasn't stated (e.g., "denormalized counter is faster but can drift vs. COUNT query is accurate but slower")
@@ -292,6 +292,7 @@ IMPORTANT: **PLANNING ONLY** - Do not execute, build, or deploy. Output is a pla
 9. Generate Filename - Create a descriptive kebab-case filename based on the plan's main topic
 10. Save Plan - Write the plan to `PLAN_OUTPUT_DIRECTORY/<filename>.md`
 11. Save & Report - Follow the `Report` section to write the plan to `PLAN_OUTPUT_DIRECTORY/<filename>.md` and provide a summary of key components
+12. Record Knowledge (Serena only) - If Serena MCP tools are available, call `write_memory` with a summary of: what was planned, key architectural decisions, patterns chosen, and any tradeoffs resolved during interviews. Use the plan filename as memory name. If Serena is not available, skip this step.
 
 ## Plan Format
 

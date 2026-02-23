@@ -34,6 +34,8 @@ Use Glob and Read to verify assumptions in the plan:
 - Are there existing patterns the plan should follow but doesn't mention?
 - Is the plan modifying the right files for the stated goal?
 
+If Serena MCP tools are available, prefer `find_symbol` and `get_symbols_overview` for verifying that classes, methods, and dependencies mentioned in the plan actually exist. Use `find_referencing_symbols` to check impact of planned changes. If Serena is not available, use Glob/Grep/Read as usual.
+
 ### Step 3: Load Relevant Standards
 
 Run the context router to determine which coding standards apply:
