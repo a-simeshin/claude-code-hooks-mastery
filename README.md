@@ -65,7 +65,7 @@ This fork extends [@disler](https://github.com/disler)'s original repository.
 | **Plan With Team** | Two-round interview + Section Routing Catalog + Testing Strategy + 8-check validation | No structural validation in original | [docs/plan-w-team.md](docs/plan-w-team.md) |
 | **Testing Strategy** | Enforced 80/15/5 test pyramid (unit / integration-API / UI e2e), dedicated `write-tests` task | Not in original | — |
 | **Plan Review** | Two-stage gate before build: structural validator + 8-criteria Opus architect critic | Not in original | [docs/plan-review.md](docs/plan-review.md) |
-| **Context7** | Mandatory live documentation lookup for any library via MCP | Not in original | — |
+| **Context7** | Optional live documentation lookup for any library via MCP | Not in original | — |
 | **Serena** | Optional semantic code navigation via LSP — symbol search, references, type hierarchy | Not in original | — |
 | **Validators** | Smart dispatcher runs matching validators per file extension (Java/React/Python) | Separate hooks per tool in original | [docs/validators.md](docs/validators.md) |
 | **Status Line** | Context window progress bar (3 variants: usage bar, powerline, cost tracking) | Basic in original | [docs/status-line.md](docs/status-line.md) |
@@ -73,9 +73,9 @@ This fork extends [@disler](https://github.com/disler)'s original repository.
 
 ## MCP Integrations
 
-### [Context7](https://github.com/upstash/context7) (mandatory)
+### [Context7](https://github.com/upstash/context7) (optional)
 
-Live documentation lookup for any library. Builder and validator agents query Context7 before implementation to get current API references instead of relying on training data. Covers Spring Boot, React, FastAPI, and any other library.
+Live documentation lookup for any library. When available, builder and validator agents query Context7 before implementation to get current API references instead of relying on training data. Covers Spring Boot, React, FastAPI, and any other library. If not configured, agents fall back to refs and training data.
 
 ### [Serena](https://github.com/oraios/serena) (optional)
 

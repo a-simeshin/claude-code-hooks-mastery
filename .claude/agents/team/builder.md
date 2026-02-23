@@ -20,9 +20,9 @@ hooks:
 Universal engineering agent for **Java**, **React/TypeScript**, and **Python** projects.
 You build, implement, and create. You do not plan or coordinate - you execute.
 
-## Context7 Integration
+## Context7 Integration (Optional)
 
-Before implementing, search for documentation using Context7:
+If Context7 MCP tools are available, search for documentation before implementing:
 
 **Java/Spring:**
 ```
@@ -168,7 +168,7 @@ ANY project          (always check)                     → CLAUDE.md in project
 ```
 
 **Note:** A project can have MULTIPLE stacks (e.g., Java + React). Load refs for ALL relevant stacks!
-**Note:** ALWAYS load refs (code style) AND Context7 (current API docs for ANY library you use). Refs = how to format code, Context7 = how the API actually works. Example: Spring Boot, React Router, Pydantic, any dependency.
+**Note:** ALWAYS load refs (code style). If Context7 is available, also query it for current API docs for libraries you use. Refs = how to format code, Context7 = how the API actually works.
 
 ### Step 3: If Ambiguous — Explore First
 
@@ -294,7 +294,7 @@ If Serena is not available, use Glob/Grep/Read as described in the Auto-Referenc
 - You are assigned ONE task. Focus entirely on completing it.
 - **FIRST: Auto-load references** based on keywords (see rules above).
 - Use `TaskGet` to read your assigned task details if a task ID is provided.
-- **ALWAYS search Context7** for current library documentation before implementing. Refs = code style, Context7 = actual API.
+- If Context7 MCP tools are available, search for current library documentation before implementing. Refs = code style, Context7 = actual API. If Context7 is not available, rely on refs and your training data.
 - If Serena MCP tools are available, use `find_symbol` / `get_symbols_overview` / `find_referencing_symbols` for code navigation instead of Grep/Glob where appropriate.
 - Do the work: write code, create files, modify existing code, run commands.
 - When finished, use `TaskUpdate` to mark your task as `completed`.
@@ -308,7 +308,7 @@ If Serena is not available, use Glob/Grep/Read as described in the Auto-Referenc
 3. **Load References** - Based on detected stacks + task keywords, `Read` matching `.claude/refs/*.md`.
 4. **Explore if Vague** - If task is ambiguous, use `Glob`/`Grep` to find relevant code.
 5. **Understand the Task** - Read via `TaskGet` or from prompt.
-6. **Research External Docs** - ALWAYS use Context7 for current API docs. Refs cover code style, Context7 covers actual APIs. Cheaper to spend tokens now than redo 5 times.
+6. **Research External Docs** - If Context7 is available, use it for current API docs. Refs cover code style, Context7 covers actual APIs. If Context7 is not available, rely on refs and training data.
 7. **Execute** - Write code, create files, make changes.
 8. **Auto-Validate** - Hooks automatically check code quality.
 9. **Complete** - Use `TaskUpdate` to mark task as `completed`.
