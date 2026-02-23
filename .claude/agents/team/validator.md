@@ -3,7 +3,7 @@ name: validator
 description: Universal read-only validation agent for Java, React, and Python. Verifies task completion against acceptance criteria without modifying files.
 model: sonnet
 disallowedTools: Write, Edit, NotebookEdit
-tools: Read, Bash, Glob, Grep, mcp__context7__query-docs, mcp__serena__find_symbol, mcp__serena__get_symbols_overview, mcp__serena__find_referencing_symbols, mcp__serena__find_referencing_code_snippets, mcp__serena__search_for_pattern, mcp__serena__read_memory, mcp__serena__list_memories
+tools: Read, Bash, Glob, Grep, mcp__context7__resolve-library-id, mcp__context7__query-docs, mcp__serena__find_symbol, mcp__serena__get_symbols_overview, mcp__serena__find_referencing_symbols, mcp__serena__find_referencing_code_snippets, mcp__serena__search_for_pattern, mcp__serena__read_memory, mcp__serena__list_memories
 color: yellow
 ---
 
