@@ -10,26 +10,9 @@ Build with **semantic context routing** - loads only the sections you need.
 
 ## Workflow
 
-### Step 0: Plan Review (if argument is a plan file)
+### Step 0: Load Plan (if argument is a plan file)
 
-If `$ARGUMENTS` ends with `.md` and the file exists in `specs/`, this is a **plan execution** request. Run validation before building:
-
-**Structural check:**
-```bash
-uv run --script .claude/hooks/validators/validate_plan.py --file $ARGUMENTS --team-dir .claude/agents/team
-```
-
-**Content review** (spawn plan-reviewer agent):
-```
-Task({
-  subagent_type: "plan-reviewer",
-  description: "Review plan before execution",
-  prompt: "Review the plan at $ARGUMENTS. Check all 8 criteria and return a structured verdict."
-})
-```
-
-- If structural check fails or review verdict is **FAIL** — show issues and ask user to fix, continue, or abort.
-- If both pass — read and execute the plan directly (skip Steps 1-3).
+If `$ARGUMENTS` ends with `.md` and the file exists in `specs/`, this is a **plan execution** request. The plan has already been reviewed by plan-reviewer during `/plan_w_team`. Read the plan and execute tasks directly (skip Steps 1-3 for context routing — use the plan's Stack keywords instead).
 
 ### Step 1: Route Task to Sections
 
@@ -75,6 +58,37 @@ echo "$ROUTE" | uv run --script .claude/hooks/section_loader.py
 Now you have only the relevant reference sections loaded.
 
 Use this context to implement the task following the patterns.
+
+### Step 4: Update OpenSpec Change (if available)
+
+After all tasks have been executed and validated:
+
+1. Check if an OpenSpec change exists for this plan:
+   ```bash
+   openspec list --changes --json 2>/dev/null
+   ```
+   Look for a change matching the plan filename (kebab-case).
+
+2. If found, read the OpenSpec tasks file:
+   ```bash
+   openspec show <change-name> --json 2>/dev/null
+   ```
+
+3. Mark completed tasks in `openspec/changes/<change-name>/tasks.md`:
+   - For each task that the builder successfully implemented, mark its checkbox as `[x]`
+   - For tasks that failed or were skipped, leave them as `[ ]`
+
+4. Report completion status and suggest next steps:
+   ```
+   OpenSpec Change Updated: openspec/changes/<change-name>/tasks.md
+   Completed: X/Y tasks
+
+   Next steps:
+   - Run `/opsx:verify` to validate implementation against specs
+   - Run `/opsx:archive` to finalize and merge delta specs
+   ```
+
+If no OpenSpec change exists, skip this step silently.
 
 ## Example
 

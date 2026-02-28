@@ -2,7 +2,7 @@
 description: Creates a concise engineering implementation plan based on user requirements and saves it to specs directory
 argument-hint: [user prompt] [orchestration prompt]
 model: opus
-disallowed-tools: Task, EnterPlanMode
+disallowed-tools: EnterPlanMode
 hooks:
   Stop:
     - hooks:
@@ -268,31 +268,78 @@ TaskOutput({
 IMPORTANT: **PLANNING ONLY** - Do not execute, build, or deploy. Output is a plan document.
 
 1. Analyze Requirements - Parse the USER_PROMPT to understand the core problem and desired outcome. If Serena MCP tools are available, call `read_memory` and `list_memories` to check for existing knowledge about related features or past decisions.
-2. **Clarify Requirements (Interview Round 1)** — Analyze the USER_PROMPT for ambiguities before reading the codebase. Ask when:
+2. **Explore OpenSpec (if available)** — Check if OpenSpec is initialized by running:
+   ```bash
+   openspec list --specs --json 2>/dev/null
+   ```
+   - If the command fails or returns empty → OpenSpec not installed/initialized. Skip with note: "OpenSpec not available — skipping spec exploration." Proceed directly to Interview Round 1.
+   - If specs exist, extract keywords from USER_PROMPT and search for related specifications:
+     ```bash
+     openspec show <matching-spec> --json --requirements
+     ```
+   - Also check for active changes that might overlap:
+     ```bash
+     openspec list --changes --json 2>/dev/null
+     ```
+   - Summarize findings: related requirements (MUST/SHOULD/MAY), scenarios (Given/When/Then), active changes, and carry these into Interview Round 1. If existing specs define requirements for this domain, prepare questions about whether the new feature should MODIFY existing requirements or ADD alongside them.
+3. **Clarify Requirements (Interview Round 1)** — If OpenSpec findings were produced in Step 2, incorporate them into your questions — ask about conflicts with existing requirements, whether to extend or modify existing specs, and whether historical design decisions still apply. Analyze the USER_PROMPT for ambiguities before reading the codebase. Ask when:
    - **Contradiction detected** — the prompt contains two statements that conflict or imply mutually exclusive approaches (e.g., "return 409" and "silently succeed" for the same case)
    - **Underspecified behavior** — the prompt describes a feature but not what happens in key user states (unauthorized, empty data, error). If the prompt says "user clicks heart" but doesn't say what unauthorized user sees — ask.
    - **Multiple valid approaches** — you see two or more reasonable ways to implement something, each with different tradeoffs. Present both with pros/cons and ask which one.
    - **Design/UX choices** — visual placement, copy text, interaction details that are matters of taste, not engineering (e.g., "badge next to text or on icon?", "what message for empty state?")
    - **Scope ambiguity** — it's unclear whether adjacent features are in or out of scope (e.g., "also update admin panel?", "include tests in this task?")
+   - **Spec conflict** — OpenSpec findings reveal that the requested feature would modify, contradict, or overlap with existing living requirements. Ask the user how to reconcile.
    - Do NOT ask about things that have exactly one obvious answer from the prompt.
-   - Do NOT ask about implementation details you can determine from the codebase — save those for step 4.
+   - Do NOT ask about implementation details you can determine from the codebase — save those for step 5.
    - Use `AskUserQuestion` (supports 1-4 questions per call, call multiple times if needed).
-3. Understand Codebase - Without subagents, directly understand existing patterns, architecture, and relevant files. If Serena MCP tools are available, prefer `find_symbol` and `get_symbols_overview` for navigating classes, methods, and dependencies instead of manual Glob/Grep. If Serena is not available, use Glob/Grep/Read as usual.
-4. **Clarify Implementation (Interview Round 2)** — Now that you know the codebase, check for implementation-specific ambiguities. Ask when:
+4. Understand Codebase - Without subagents, directly understand existing patterns, architecture, and relevant files. If Serena MCP tools are available, prefer `find_symbol` and `get_symbols_overview` for navigating classes, methods, and dependencies instead of manual Glob/Grep. If Serena is not available, use Glob/Grep/Read as usual.
+5. **Clarify Implementation (Interview Round 2)** — Now that you know the codebase, check for implementation-specific ambiguities. Ask when:
    - **Multiple patterns exist** — the codebase has more than one way to solve this type of problem, and it's not clear which fits better (e.g., "CartService uses optimistic UI, OrderService uses server-confirmed — which pattern for favorites?"). Present both with pros/cons.
    - **Technical tradeoff with no clear winner** — both options are valid and the choice depends on priorities the user hasn't stated (e.g., "denormalized counter is faster but can drift vs. COUNT query is accurate but slower")
    - **Integration ambiguity** — the existing code can accommodate the new feature in more than one place or way (e.g., "add to existing DTO or create a new one?", "extend current controller or create separate?")
    - **Discovered edge case** — reading the code revealed a scenario the prompt didn't address (e.g., "the material can be soft-deleted — should favorites to deleted materials auto-remove?")
    - Do NOT ask about things where the codebase has exactly one established pattern — just follow it.
    - Skip this step entirely if every implementation choice has a single obvious answer from the code.
-5. Design Solution - Develop technical approach including architecture decisions and implementation strategy
-6. Define Testing Strategy - Plan the test pyramid: 80% unit tests, 15% integration/API tests, 5% UI e2e tests. Map each test to the source code it validates. Reference existing test patterns from the codebase.
-7. Define Team Members - Use `ORCHESTRATION_PROMPT` (if provided) to guide team composition. Identify from `.claude/agents/team/*.md` or use `general-purpose`. Include a test-builder member. Document in plan.
-8. Define Step by Step Tasks - Use `ORCHESTRATION_PROMPT` (if provided) to guide task granularity and parallel/sequential structure. Write out tasks with IDs, dependencies, assignments, and `**Tests**` field. Always include a dedicated `write-tests` task before `validate-all`. Document in plan.
-9. Generate Filename - Create a descriptive kebab-case filename based on the plan's main topic
-10. Save Plan - Write the plan to `PLAN_OUTPUT_DIRECTORY/<filename>.md`
-11. Save & Report - Follow the `Report` section to write the plan to `PLAN_OUTPUT_DIRECTORY/<filename>.md` and provide a summary of key components
-12. Record Knowledge (Serena only) - If Serena MCP tools are available, call `write_memory` with a summary of: what was planned, key architectural decisions, patterns chosen, and any tradeoffs resolved during interviews. Use the plan filename as memory name. If Serena is not available, skip this step.
+6. Design Solution - Develop technical approach including architecture decisions and implementation strategy
+7. Define Testing Strategy - Plan the test pyramid: 80% unit tests, 15% integration/API tests, 5% UI e2e tests. Map each test to the source code it validates. Reference existing test patterns from the codebase.
+8. Define Team Members - Use `ORCHESTRATION_PROMPT` (if provided) to guide team composition. Identify from `.claude/agents/team/*.md` or use `general-purpose`. Include a test-builder member. Document in plan.
+9. Define Step by Step Tasks - Use `ORCHESTRATION_PROMPT` (if provided) to guide task granularity and parallel/sequential structure. Write out tasks with IDs, dependencies, assignments, and `**Tests**` field. Always include a dedicated `write-tests` task before `validate-all`. Document in plan.
+10. Generate Filename - Create a descriptive kebab-case filename based on the plan's main topic
+11. Save Plan - Write the plan to `PLAN_OUTPUT_DIRECTORY/<filename>.md`
+12. **Plan Review** — Run structural validation and architectural review on the saved plan. This ensures plan quality BEFORE OpenSpec artifacts are generated.
+
+    **Structural check:**
+    ```bash
+    uv run --script .claude/hooks/validators/validate_plan.py --file <plan-path> --team-dir .claude/agents/team
+    ```
+
+    **Content review** (spawn plan-reviewer agent):
+    ```
+    Task({
+      subagent_type: "plan-reviewer",
+      description: "Review plan before OpenSpec propose",
+      prompt: "Review the plan at <plan-path>. Check all 8 criteria and return a structured verdict."
+    })
+    ```
+
+    - If structural check fails or review verdict is **FAIL** → show issues, ask user to fix or abort. Do NOT proceed to Step 13.
+    - If both pass → proceed to OpenSpec Propose.
+13. **OpenSpec Propose (if available)** — If OpenSpec is initialized (Step 2 succeeded), create OpenSpec change artifacts from the reviewed plan.
+
+    Run the following to check availability:
+    ```bash
+    openspec list --specs --json 2>/dev/null
+    ```
+
+    If available, provide the plan context to OpenSpec by referencing the saved plan:
+    - The change name should match the plan filename (kebab-case)
+    - Tell the user: "Plan review passed. Creating OpenSpec change artifacts..."
+    - Execute `/opsx:propose` with context from the plan: task description, objective, solution approach, implementation phases, and step by step tasks
+    - OpenSpec will create: `openspec/changes/<name>/` with proposal.md, specs/, design.md, tasks.md
+
+    If OpenSpec is not available, skip with note: "OpenSpec not initialized — skipping artifact generation."
+14. Report - Follow the `Report` section to provide a summary of key components
+15. Record Knowledge (Serena only) - If Serena MCP tools are available, call `write_memory` with a summary of: what was planned, key architectural decisions, patterns chosen, and any tradeoffs resolved during interviews. Use the plan filename as memory name. If Serena is not available, skip this step.
 
 ## Plan Format
 
@@ -457,6 +504,8 @@ Team Task List:
 
 Team members:
 - <list of team members and their roles (concise)>
+
+OpenSpec Change: openspec/changes/<name>/ (if created)
 
 When you're ready, you can execute the plan in a new agent by running:
 /smart_build <replace with path to plan>
