@@ -1,5 +1,8 @@
 # Claude Code Hooks Mastery
 
+[![en](https://img.shields.io/badge/lang-en-blue.svg)](https://github.com/a-simeshin/claude-code-hooks-mastery/blob/main/README.md)
+[![ru](https://img.shields.io/badge/lang-ru-blue.svg)](https://github.com/a-simeshin/claude-code-hooks-mastery/blob/main/README.ru.md)
+
 > Personal fork of [disler/claude-code-hooks-mastery](https://github.com/disler/claude-code-hooks-mastery) — a multi-agent framework for **Java**, **React/TypeScript**, and **Python** projects built on Claude Code hooks.
 
 ## Goal
