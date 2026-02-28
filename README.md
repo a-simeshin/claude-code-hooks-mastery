@@ -40,7 +40,7 @@ flowchart TB
         pr -->|PASS| smart
         vp -->|FAIL| fix["Fix & retry"]
         pr -->|FAIL| fix
-        pr -.->|PASS| propose["OpenSpec propose"]
+        pr -->|PASS| propose["OpenSpec propose<br/>(if initialized)"]
     end
 
     subgraph "Context Routing"
