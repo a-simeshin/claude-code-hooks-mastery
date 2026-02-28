@@ -33,9 +33,8 @@ flowchart TB
     end
 
     subgraph Planning
-        plan -.-> osread["OpenSpec explore<br/>(read existing specs)"]
-        osread -.-> spec["specs/*.md"]
-        plan --> spec
+        plan --> osread["OpenSpec explore<br/>(if initialized)"]
+        osread --> spec["specs/*.md"]
         spec --> vp["validate_plan.py<br/>(8 structural checks)"]
         vp -->|PASS| pr["plan-reviewer<br/>(Opus critic)"]
         pr -->|PASS| smart
