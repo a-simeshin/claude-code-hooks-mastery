@@ -68,14 +68,14 @@ This fork extends [@disler](https://github.com/disler)'s original repository.
 |---------|-------------|-------------|------|
 | **Context Routing** | Keyword-based section routing — loads only relevant refs per task, zero LLM cost | Original loads all refs into context | [docs/context-routing.md](docs/context-routing.md) |
 | **Plan With Team** | Two-round interview + Section Routing Catalog + Testing Strategy + 8-check validation | No structural validation in original | [docs/plan-w-team.md](docs/plan-w-team.md) |
-| **Testing Strategy** | Enforced 80/15/5 test pyramid (unit / integration-API / UI e2e), dedicated `write-tests` task | Not in original | — |
+| **Testing Strategy** | Enforced 80/15/5 test pyramid (unit / integration-API / UI e2e), dedicated `write-tests` task | Not in original | [docs/testing-strategy.md](docs/testing-strategy.md) |
 | **Plan Review** | Two-stage gate before build: structural validator + 8-criteria Opus architect critic | Not in original | [docs/plan-review.md](docs/plan-review.md) |
-| **Context7** | Optional live documentation lookup for any library via MCP | Not in original | — |
-| **Serena** | Optional semantic code navigation via LSP — symbol search, references, type hierarchy | Not in original | — |
+| **Context7** | Optional live documentation lookup for any library via MCP | Not in original | [docs/context7.md](docs/context7.md) |
+| **Serena** | Optional semantic code navigation via LSP — symbol search, references, type hierarchy | Not in original | [docs/serena.md](docs/serena.md) |
 | **Validators** | Smart dispatcher runs matching validators per file extension (Java/React/Python) | Separate hooks per tool in original | [docs/validators.md](docs/validators.md) |
 | **Status Line** | Context window progress bar (3 variants: usage bar, powerline, cost tracking) | Basic in original | [docs/status-line.md](docs/status-line.md) |
-| **OpenSpec** | Optional living specs integration — explore existing specs, propose changes after plan review, track task progress during build | Not in original | — |
-| **Install / Uninstall** | One-line `curl` install + non-interactive mode for CI/Claude Code | Manual setup in original | — |
+| **OpenSpec** | Optional living specs integration — explore existing specs, propose changes after plan review, track task progress during build | Not in original | [docs/openspec.md](docs/openspec.md) |
+| **Install / Uninstall** | One-line `curl` install + non-interactive mode for CI/Claude Code | Manual setup in original | [docs/install.md](docs/install.md) |
 
 ## MCP Integrations
 

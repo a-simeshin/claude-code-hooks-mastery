@@ -120,7 +120,9 @@ This means in a monorepo with all three stacks, only the standards matching the 
 
 ## Planning Integration
 
-In a multi-agent team workflow, the planner ([`/plan_w_team`](plan-w-team.md)) provides routing hints via a `**Stack**` field on each task. The validator enforces that keywords route to sections, and the builder receives the right standards at execution time. See [Plan With Team](plan-w-team.md) for details on the catalog, validation, and requirements interview.
+In a multi-agent team workflow, the planner ([`/plan_w_team`](plan-w-team.md)) provides routing hints via a `**Stack**` field on each task. The validator enforces that keywords route to sections, and the builder receives the right standards at execution time. See [Plan With Team](plan-w-team.md) for details on the catalog, validation, and the two-round requirements interview.
+
+When [OpenSpec](openspec.md) is initialized, `/plan_w_team` also reads existing specs before planning (Step 2) to inform context routing decisions with domain knowledge from living specifications.
 
 ## Reference Files
 

@@ -6,15 +6,16 @@
 
 ```mermaid
 flowchart TD
-    A["1. Analyze requirements"] --> B["2. Clarify requirements<br/>(AskUserQuestion)"]
-    B --> C["3. Read codebase"]
-    C --> D["4. Clarify implementation<br/>(AskUserQuestion)"]
-    D --> E["5. Design solution"]
-    E --> F["6. Define team & tasks"]
-    F --> G["7. Save plan to specs/"]
-    G --> H["validate_plan.py<br/>(7 structural checks)"]
+    A["1. Analyze requirements"] --> B["2. OpenSpec explore<br/>(if initialized)"]
+    B --> C["3. Interview Round 1<br/>(spec-aware)"]
+    C --> D["4. Read codebase"]
+    D --> E["5. Interview Round 2"]
+    E --> F["6-9. Design, testing,<br/>team, tasks"]
+    F --> G["10-11. Generate filename<br/>& save plan"]
+    G --> H["12. Plan Review<br/>(structural + critic)"]
     H -->|FAIL| G
-    H -->|PASS| I["Ready for /smart_build"]
+    H -->|PASS| I["13. OpenSpec propose<br/>(if initialized)"]
+    I --> J["14-15. Report &<br/>record knowledge"]
 ```
 
 ## Two-Round Requirements Interview
@@ -23,15 +24,16 @@ The planner asks clarifying questions when it detects ambiguities — not about 
 
 The two rounds are separated by codebase reading — this injects new information between rounds and keeps each round focused on what's knowable at that stage.
 
-### Round 1: After Analyzing Requirements
+### Round 1: After Analyzing Requirements + OpenSpec Explore
 
-Questions about ambiguities in the user's request — before reading any code. Ask when:
+Questions about ambiguities in the user's request — before reading any code. If OpenSpec findings exist from Step 2, they inform the questions. Ask when:
 
 - **Contradiction detected** — the prompt implies two mutually exclusive approaches
 - **Underspecified behavior** — key user states (unauthorized, empty data, error) are not described
 - **Multiple valid approaches** — present both with pros/cons, let user choose
 - **Design/UX choices** — placement, copy, interaction details that are matters of taste
 - **Scope ambiguity** — unclear whether adjacent features are in or out of scope
+- **Spec conflict** — OpenSpec findings reveal overlap or contradiction with existing living requirements
 
 ### Round 2: After Reading the Codebase
 
@@ -94,6 +96,10 @@ Stack: "Java Spring Boot controller exception error handling"
      java-patterns#basics      java-patterns#errors
 ```
 
+## Plan Review (Step 12)
+
+After saving the plan, `/plan_w_team` runs a two-stage review gate before proceeding to OpenSpec propose. See [Plan Review](plan-review.md) for details on the 8 criteria.
+
 ## Stack Validation (Check 7)
 
 The plan validator runs Check 7 on every task — imports `context_router.route()` and verifies the Stack field produces sections:
@@ -140,7 +146,8 @@ The generated plan includes these sections:
 
 ## Key Files
 
-- `.claude/commands/plan_w_team.md` — planner prompt with workflow, catalog, and plan format
-- `.claude/hooks/validators/validate_plan.py` — structural validator (7 checks including Stack)
+- `.claude/commands/plan_w_team.md` — planner prompt with 15-step workflow, catalog, and plan format
+- `.claude/hooks/validators/validate_plan.py` — structural validator (8 checks including Stack)
+- `.claude/agents/team/plan-reviewer.md` — Opus critic agent (Step 12)
 - `.claude/hooks/context_router.py` — keyword router that Stack fields feed into
 - `.claude/refs/*.md` — reference files with coding standards sections

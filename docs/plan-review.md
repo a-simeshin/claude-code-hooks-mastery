@@ -1,6 +1,6 @@
 # Plan Review (Critic Pattern)
 
-Before executing a plan, `/smart_build` runs a **two-stage validation gate** — structural checks + architect-level content review. This prevents wasted compute on flawed plans.
+During planning, `/plan_w_team` runs a **two-stage validation gate** (Step 12) — structural checks + architect-level content review. This prevents wasted compute on flawed plans and ensures quality before OpenSpec artifacts are generated.
 
 ## How It Works
 
@@ -39,15 +39,18 @@ flowchart LR
 
 **Verdict:** PASS / CONDITIONAL PASS / FAIL. One FAIL on any criterion = overall FAIL.
 
-## Integration with `/smart_build`
+## Integration with `/plan_w_team`
 
 ```bash
-/smart_build specs/my-plan.md
-# Step 0: validate_plan.py → structural check
-# Step 0: plan-reviewer agent → content review
-# If both pass → execute plan
-# If either fails → show issues, ask user to fix/continue/abort
+/plan_w_team "add dark mode"
+# Steps 1-11: analyze, interview, design, save plan
+# Step 12: validate_plan.py → structural check
+# Step 12: plan-reviewer agent → content review
+# If both pass → Step 13 (OpenSpec propose)
+# If either fails → show issues, ask user to fix or abort
 ```
+
+`/smart_build` no longer runs plan review — it trusts that the plan was reviewed during `/plan_w_team`.
 
 ## Real-World Example
 
@@ -70,4 +73,4 @@ When tested on `specs/hooks-update-with-team.md`, the critic detected:
 
 - `.claude/hooks/validators/validate_plan.py` — structural plan validation
 - `.claude/agents/team/plan-reviewer.md` — Opus critic agent definition
-- `.claude/commands/smart_build.md` — integration point (Step 0)
+- `.claude/commands/plan_w_team.md` — integration point (Step 12)
