@@ -2,6 +2,19 @@
 
 > Personal fork of [disler/claude-code-hooks-mastery](https://github.com/disler/claude-code-hooks-mastery) — a multi-agent framework for **Java**, **React/TypeScript**, and **Python** projects built on Claude Code hooks.
 
+## Goal
+
+Make Claude Code agent work **independently and consistently** — you describe a task, Claude Code delivers a quality result that matches your expectations.
+
+### Principles
+
+1. **Automate every action** — if an action exists, it's automated via LLM (planning, review, validation, knowledge recording)
+2. **Control via deterministic scripts** — all actions are governed by hard scripts, not LLM discretion (validators, routers, dispatchers)
+3. **Never delete files** — destructive operations are prohibited; hooks enforce this at the system level
+4. **Document into project memory** — decisions and outcomes are recorded into long-term project-level memory (Serena, OpenSpec)
+5. **Strict format validation** — plan structure and documentation format are verified by structural validators before execution
+6. **Stack-aware coding standards** — code and test conventions are loaded into agents dynamically by scripts based on the detected technology stack
+
 ## Quick Start
 
 ```bash
