@@ -14,6 +14,12 @@ Build with **semantic context routing** - loads only the sections you need.
 
 If `$ARGUMENTS` ends with `.md` and the file exists in `specs/`, this is a **plan execution** request. The plan has already been reviewed by plan-reviewer during `/plan_w_team`. Read the plan and execute tasks directly (skip Steps 1-3 for context routing — use the plan's Stack keywords instead).
 
+**OpenSpec tracking init:** At the start of plan execution, check if an OpenSpec change exists:
+```bash
+openspec list --changes --json 2>/dev/null
+```
+Look for a change matching the plan filename (kebab-case). If found, note the change name — you will update its `tasks.md` incrementally as builders complete tasks (see Step 4).
+
 ### Step 1: Route Task to Sections
 
 Run the deterministic context router (keyword matching, zero LLM cost).
@@ -59,36 +65,26 @@ Now you have only the relevant reference sections loaded.
 
 Use this context to implement the task following the patterns.
 
-### Step 4: Update OpenSpec Change (if available)
+### Step 4: Track OpenSpec Progress (if available)
 
-After all tasks have been executed and validated:
+This step runs **incrementally throughout plan execution**, not as a batch at the end.
 
-1. Check if an OpenSpec change exists for this plan:
-   ```bash
-   openspec list --changes --json 2>/dev/null
-   ```
-   Look for a change matching the plan filename (kebab-case).
+**After each builder completes a task:**
+1. Find the matching task in `openspec/changes/<change-name>/tasks.md` by task name or description
+2. Mark its checkbox as `[x]` immediately using Edit tool
+3. This enables real-time progress tracking via `openspec view`
 
-2. If found, read the OpenSpec tasks file:
-   ```bash
-   openspec show <change-name> --json 2>/dev/null
-   ```
+**After ALL tasks are complete — final report:**
+```
+OpenSpec Change Updated: openspec/changes/<change-name>/tasks.md
+Completed: X/Y tasks
 
-3. Mark completed tasks in `openspec/changes/<change-name>/tasks.md`:
-   - For each task that the builder successfully implemented, mark its checkbox as `[x]`
-   - For tasks that failed or were skipped, leave them as `[ ]`
+Next steps:
+- Run `/opsx:verify` to validate implementation against specs
+- Run `/opsx:archive` to finalize and merge delta specs
+```
 
-4. Report completion status and suggest next steps:
-   ```
-   OpenSpec Change Updated: openspec/changes/<change-name>/tasks.md
-   Completed: X/Y tasks
-
-   Next steps:
-   - Run `/opsx:verify` to validate implementation against specs
-   - Run `/opsx:archive` to finalize and merge delta specs
-   ```
-
-If no OpenSpec change exists, skip this step silently.
+If no OpenSpec change was found in Step 0, skip this step silently.
 
 ## Example
 
