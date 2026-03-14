@@ -16,11 +16,6 @@
     ],
     "deny": []
   },
-  "statusLine": {
-    "type": "command",
-    "command": "uv run --no-project $CLAUDE_PROJECT_DIR/.claude/status_lines/status_line.py",
-    "padding": 5
-  },
   "hooks": {
     "PreToolUse": [
       {

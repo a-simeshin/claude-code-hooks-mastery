@@ -33,7 +33,7 @@ Installs `.claude/` directory with refs, agents, hooks, and validators into the 
 bash install.sh --force
 
 # Custom options via env vars
-STATUS_LINE_CHOICE=2 TTS_ENABLED=y bash install.sh --force
+TTS_ENABLED=y bash install.sh --force
 
 # Uninstall
 curl -fsSL https://raw.githubusercontent.com/a-simeshin/claude-code-hooks-mastery/main/uninstall.sh | bash
@@ -89,7 +89,7 @@ This fork extends [@disler](https://github.com/disler)'s original repository.
 | **Context7** | Optional live documentation lookup for any library via MCP | Not in original | [docs/context7.md](docs/context7.md) |
 | **Serena** | Optional semantic code navigation via LSP — symbol search, references, type hierarchy | Not in original | [docs/serena.md](docs/serena.md) |
 | **Validators** | Smart dispatcher runs matching validators per file extension (Java/React/Python) | Separate hooks per tool in original | [docs/validators.md](docs/validators.md) |
-| **Status Line** | Context window progress bar (3 variants: usage bar, powerline, cost tracking) | Basic in original | [docs/status-line.md](docs/status-line.md) |
+| **Status Line** | Recommends [claude-hud](https://github.com/jarrodwatts/claude-hud) — context bar, usage limits, tool/agent tracking, todos | Basic in original | [docs/status-line.md](docs/status-line.md) |
 | **OpenSpec** | Optional living specs integration — explore existing specs, propose changes after plan review, track task progress during build | Not in original | [docs/openspec.md](docs/openspec.md) |
 | **Install / Uninstall** | One-line `curl` install + non-interactive mode for CI/Claude Code | Manual setup in original | [docs/install.md](docs/install.md) |
 
@@ -113,6 +113,18 @@ Living specifications and delta tracking. When installed (`npm i -g @fission-ai/
 
 Post-build, use `/opsx:verify` and `/opsx:archive` (OpenSpec's own slash commands) to validate and finalize. If OpenSpec is not installed, all steps skip silently.
 
+### [claude-hud](https://github.com/jarrodwatts/claude-hud) (recommended)
+
+Rich status line for Claude Code — context window, usage rate limits, tool/agent tracking, todos, git status, and more. Install via Claude Code plugin marketplace:
+
+```
+/plugin marketplace add jarrodwatts/claude-hud
+/plugin install claude-hud
+/claude-hud:setup
+```
+
+Configure display with `/claude-hud:configure` — choose layout (compact/expanded), toggle elements, customize colors.
+
 ## Commands
 
 | Command | Description |
@@ -120,7 +132,6 @@ Post-build, use `/opsx:verify` and `/opsx:archive` (OpenSpec's own slash command
 | `/plan_w_team` | Create a plan with interviews, OpenSpec explore, plan review gate, and OpenSpec propose |
 | `/smart_build` | Build with context routing + incremental OpenSpec task tracking |
 | `/plan` | Quick single-agent implementation plan |
-| `/update_status_line` | Update custom key-value pairs in session status line |
 | `/all_tools` | List all available tools |
 
 ## Credits

@@ -9,8 +9,7 @@ curl -fsSL https://raw.githubusercontent.com/a-simeshin/claude-code-hooks-master
 ```
 
 Interactive prompts:
-1. **Status line variant** — choose from 3 options (usage bar, powerline, cost tracking)
-2. **TTS** — enable/disable text-to-speech notifications
+1. **TTS** — enable/disable text-to-speech notifications
 
 ## Non-Interactive Install
 
@@ -23,12 +22,11 @@ bash install.sh --force
 With custom options:
 
 ```bash
-STATUS_LINE_CHOICE=2 TTS_ENABLED=y bash install.sh --force
+TTS_ENABLED=y bash install.sh --force
 ```
 
 | Variable | Values | Default |
 |----------|--------|---------|
-| `STATUS_LINE_CHOICE` | `1` (usage bar), `2` (powerline), `3` (cost tracking) | `1` |
 | `TTS_ENABLED` | `y` / `n` | `n` |
 
 ## What Gets Installed
@@ -40,7 +38,6 @@ STATUS_LINE_CHOICE=2 TTS_ENABLED=y bash install.sh --force
 ├── hooks/             — context router, section loader, validators
 ├── refs/              — coding standards (Java, React, Python)
 ├── settings.json      — hook configuration
-├── status_lines/      — status line scripts
 └── CLAUDE.md          — project instructions
 ```
 
@@ -64,3 +61,4 @@ Removes the `.claude/` directory and all installed files.
 | [Context7](context7.md) | Live documentation lookup | Add MCP server to config |
 | [Serena](serena.md) | Semantic code navigation | Add MCP server to config |
 | [OpenSpec](openspec.md) | Living specs & delta tracking | `npm i -g @fission-ai/openspec && openspec init --tools claude` |
+| [claude-hud](status-line.md) | Rich status line (context, limits, tools, agents, todos) | `/plugin marketplace add jarrodwatts/claude-hud && /plugin install claude-hud` |

@@ -73,28 +73,7 @@ else
 fi
 
 # ─────────────────────────────────────────────────────────────
-# 1. Status Line
-# ─────────────────────────────────────────────────────────────
-echo "Status Line options:"
-echo "  1) Context window usage bar (default)"
-echo "  2) v9 - Minimal powerline style"
-echo "  3) v5 - Cost tracking"
-echo "  4) Disable"
-if [ "$INTERACTIVE" = true ]; then
-    read -p "Choose [1-4, default=1]: " STATUS_CHOICE </dev/tty
-else
-    STATUS_CHOICE="${STATUS_LINE_CHOICE:-1}"
-fi
-
-case $STATUS_CHOICE in
-    2) STATUS_LINE="status_line_v9.py" ;;
-    3) STATUS_LINE="status_line_v5.py" ;;
-    4) STATUS_LINE="" ;;
-    *) STATUS_LINE="status_line.py" ;;
-esac
-
-# ─────────────────────────────────────────────────────────────
-# 2. TTS Notifications
+# 1. TTS Notifications
 # ─────────────────────────────────────────────────────────────
 echo ""
 if [ "$INTERACTIVE" = true ]; then
@@ -110,7 +89,7 @@ else
 fi
 
 # ─────────────────────────────────────────────────────────────
-# 3. Agentic Mode
+# 2. Agentic Mode
 # ─────────────────────────────────────────────────────────────
 echo ""
 echo -e "${YELLOW}Agentic mode runs without permission prompts.${NC}"
@@ -126,18 +105,6 @@ fi
 # ─────────────────────────────────────────────────────────────
 echo ""
 SETTINGS_FILE=".claude/settings.json"
-
-# Status Line
-if [ -z "$STATUS_LINE" ]; then
-    # Remove statusLine section
-    sed -i.bak '/"statusLine"/,/^  },/d' "$SETTINGS_FILE" && rm -f "$SETTINGS_FILE.bak"
-    echo "  Status Line: disabled"
-elif [ "$STATUS_LINE" != "status_line.py" ]; then
-    sed -i.bak "s/status_line\.py/$STATUS_LINE/g" "$SETTINGS_FILE" && rm -f "$SETTINGS_FILE.bak"
-    echo "  Status Line: $STATUS_LINE"
-else
-    echo "  Status Line: status_line.py (default)"
-fi
 
 # TTS
 if [ "$TTS_ENABLED" = false ]; then

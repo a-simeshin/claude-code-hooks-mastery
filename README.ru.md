@@ -33,7 +33,7 @@ curl -fsSL https://raw.githubusercontent.com/a-simeshin/claude-code-hooks-master
 bash install.sh --force
 
 # Пользовательские параметры через переменные окружения
-STATUS_LINE_CHOICE=2 TTS_ENABLED=y bash install.sh --force
+TTS_ENABLED=y bash install.sh --force
 
 # Удаление
 curl -fsSL https://raw.githubusercontent.com/a-simeshin/claude-code-hooks-mastery/main/uninstall.sh | bash
@@ -89,7 +89,7 @@ flowchart TB
 | **Context7** | Опциональный поиск актуальной документации для любой библиотеки через MCP | Нет в оригинале | [docs/context7.md](docs/context7.md) |
 | **Serena** | Опциональная семантическая навигация по коду через LSP — поиск символов, ссылок, иерархии типов | Нет в оригинале | [docs/serena.md](docs/serena.md) |
 | **Validators** | Умный диспетчер запускает подходящие валидаторы по расширению файла (Java/React/Python) | Отдельные хуки на каждый инструмент в оригинале | [docs/validators.md](docs/validators.md) |
-| **Status Line** | Прогресс-бар контекстного окна (3 варианта: usage bar, powerline, cost tracking) | Базовый в оригинале | [docs/status-line.md](docs/status-line.md) |
+| **Status Line** | Рекомендуем [claude-hud](https://github.com/jarrodwatts/claude-hud) — контекст, лимиты, инструменты, агенты, todos | Базовый в оригинале | [docs/status-line.md](docs/status-line.md) |
 | **OpenSpec** | Опциональная интеграция с living specs — чтение существующих спецификаций, создание изменений после ревью плана, отслеживание прогресса задач во время сборки | Нет в оригинале | [docs/openspec.md](docs/openspec.md) |
 | **Install / Uninstall** | Установка одной командой `curl` + неинтерактивный режим для CI/Claude Code | Ручная настройка в оригинале | [docs/install.md](docs/install.md) |
 
@@ -113,6 +113,18 @@ Living specifications и дельта-трекинг. При установке 
 
 После сборки используйте `/opsx:verify` и `/opsx:archive` (собственные slash-команды OpenSpec) для валидации и финализации. Если OpenSpec не установлен — все шаги пропускаются молча.
 
+### [claude-hud](https://github.com/jarrodwatts/claude-hud) (рекомендуется)
+
+Информативная статусная строка для Claude Code — контекстное окно, лимиты использования, отслеживание инструментов/агентов, todos, git-статус и многое другое. Установка через маркетплейс плагинов Claude Code:
+
+```
+/plugin marketplace add jarrodwatts/claude-hud
+/plugin install claude-hud
+/claude-hud:setup
+```
+
+Настройка отображения через `/claude-hud:configure` — выбор layout (compact/expanded), переключение элементов, кастомизация цветов.
+
 ## Команды
 
 | Команда | Описание |
@@ -120,7 +132,6 @@ Living specifications и дельта-трекинг. При установке 
 | `/plan_w_team` | Создать план с интервью, OpenSpec explore, гейтом ревью плана и OpenSpec propose |
 | `/smart_build` | Сборка с маршрутизацией контекста + инкрементальное отслеживание задач OpenSpec |
 | `/plan` | Быстрый одноагентный план реализации |
-| `/update_status_line` | Обновить пользовательские key-value пары в статусной строке сессии |
 | `/all_tools` | Показать все доступные инструменты |
 
 ## Credits
