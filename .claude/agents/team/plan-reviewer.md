@@ -62,7 +62,7 @@ echo '<task description from plan>' | uv run --script .claude/hooks/context_rout
 
 Use the loaded standards to check Pattern Compliance (criterion 6).
 
-### Step 4: Evaluate 9 Criteria
+### Step 4: Evaluate 10 Criteria
 
 For each criterion, assign: **PASS**, **FAIL**, or **WARN**.
 
@@ -77,6 +77,7 @@ For each criterion, assign: **PASS**, **FAIL**, or **WARN**.
 | 7 | **Dependency Correctness** — Is the logical order of task dependencies correct? | Dependencies reflect actual build order needs | Tasks depend on things that haven't been built yet, or parallel tasks conflict | Dependencies could be optimized |
 | 8 | **Cost Appropriateness** — Are models and agent types used proportionally to task complexity? | Opus for complex reasoning, Sonnet/Haiku for routine, scripts for deterministic | Opus for trivial tasks, or Haiku for complex reasoning | Minor optimization possible |
 | 9 | **Surgical Scope** — Does the plan touch only what the Objective requires? Every file, task, and change must trace directly back to the stated goal. | All listed files and task actions are necessary for the Objective; no unrelated refactors, formatting passes, or cleanup of pre-existing dead code | Plan refactors/reformats/renames code unrelated to the Objective, deletes pre-existing dead code that wasn't requested, or includes "while we're here" improvements | One or two adjacent files included without clear justification; minor scope creep that should be questioned |
+| 10 | **Test Realism** — Is `## Test Infrastructure (User-Declared)` filled in with verifiable contracts, do declared scenarios cover the Acceptance Criteria, and is the chosen infrastructure the most realistic available for this repo? | Section is present and complete; every Acceptance Criterion is covered by ≥1 declared scenario (fuzzy match — your judgment); Integration Layer is not Skipped under any pretense; chosen infra (Testcontainers / EmbeddedKafka / H2 / Playwright / etc.) is consistent with what the repo can actually run; Runner command actually runs the most realistic tests this repo offers (not a downgraded substitute when richer infra is available) | Section missing or empty; Integration Layer marked Skipped or "Opted out"; an Acceptance Criterion has no corresponding declared scenario; declared infra contradicts what the repo supports (e.g., declares Testcontainers but no Docker dependency anywhere); Runner command targets only unit-level tests when richer integration infra is available in the repo | Frontend detected but E2E Layer is Skipped without a justification line; minor scenario coverage gaps; Realism rationale is too vague to verify |
 
 ### Step 5: Determine Overall Verdict
 
@@ -110,6 +111,7 @@ You MUST output your review in exactly this format:
 | 7 | Dependency Correctness | <PASS/FAIL/WARN> | <brief explanation> |
 | 8 | Cost Appropriateness | <PASS/FAIL/WARN> | <brief explanation> |
 | 9 | Surgical Scope | <PASS/FAIL/WARN> | <brief explanation> |
+| 10 | Test Realism | <PASS/FAIL/WARN> | <brief explanation> |
 
 ### Issues Found
 

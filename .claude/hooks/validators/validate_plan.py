@@ -17,7 +17,9 @@ Checks:
 5. Agent Types exist in `.claude/agents/team/*.md` (+ built-in types)
 6. Acceptance Criteria not empty
 7. Every task has a **Stack** field with keywords that route to context sections
-8. A dedicated testing task exists (Task ID contains "test")
+8. Per-layer test tasks exist (`unit-tests` and `integration-tests` mandatory; `e2e-tests` if E2E layer enabled). Single combined `write-tests` is rejected.
+9. `## Test Infrastructure (User-Declared)` section is present (plan-as-contract).
+10. Each non-Skipped test layer block has all required fields (Files glob, Infra signature, ≥1 Happy-path scenario, Runner command, Realism rationale). Integration Layer cannot be Skipped — that is FAIL.
 
 Exit codes:
 - 0: Validation passed
@@ -133,6 +135,10 @@ def parse_plan(content: str) -> dict:
         "new_files": [],
         "tasks": [],
         "acceptance_criteria": "",
+        "test_infrastructure": {
+            "section_present": False,
+            "layers": [],  # list of dicts: {kind, stack, status, files_glob, infra_signature, scenarios, runner_command, realism_rationale}
+        },
     }
 
     # Extract Relevant Files (between ## Relevant Files and next ##)
@@ -220,6 +226,82 @@ def parse_plan(content: str) -> dict:
     )
     if ac_match:
         result["acceptance_criteria"] = ac_match.group(1).strip()
+
+    # Extract Test Infrastructure (User-Declared)
+    ti_match = re.search(
+        r'^## Test Infrastructure \(User-Declared\)\s*\n(.*?)(?=^## |\Z)',
+        content, re.MULTILINE | re.DOTALL
+    )
+    if ti_match:
+        result["test_infrastructure"]["section_present"] = True
+        ti_block = ti_match.group(1)
+
+        # Split into layer blocks by `### <Kind> Layer (<stack>)` headers
+        layer_header = re.compile(
+            r'^###\s+(Unit|Integration|E2E)\s+Layer\s*\(([^)]+)\)(.*)$',
+            re.MULTILINE | re.IGNORECASE
+        )
+        layer_matches = list(layer_header.finditer(ti_block))
+
+        for i, m in enumerate(layer_matches):
+            kind = m.group(1).strip().lower()  # unit | integration | e2e
+            stack = m.group(2).strip()
+            # Block text from end of this header to start of next (or end of section)
+            start = m.end()
+            end = layer_matches[i + 1].start() if i + 1 < len(layer_matches) else len(ti_block)
+            block = ti_block[start:end]
+
+            layer = {
+                "kind": kind,
+                "stack": stack,
+                "status": None,
+                "files_glob": None,
+                "infra_signature": None,
+                "scenarios": [],
+                "runner_command": None,
+                "realism_rationale": None,
+            }
+
+            def _extract_field(label: str, text: str) -> str | None:
+                # Match `**Label:**`, `**Label (qualifier):**`, etc. — colon is INSIDE the bold markers.
+                # Pattern: ** + label + (optional anything-but-asterisk including ':') + ** + optional ':' + whitespace + value
+                pat = re.compile(
+                    rf'\*\*{re.escape(label)}[^*]*\*\*\s*:?\s*(.+)',
+                    re.IGNORECASE
+                )
+                fm = pat.search(text)
+                if not fm:
+                    return None
+                val = fm.group(1).strip()
+                # Strip surrounding backticks if any
+                val = val.strip('`').strip()
+                # Treat placeholder template values (in <angle brackets>) as missing
+                if val.startswith('<') and val.endswith('>'):
+                    return None
+                return val if val else None
+
+            layer["status"] = _extract_field("Status", block)
+            layer["files_glob"] = _extract_field("Files glob", block)
+            layer["infra_signature"] = _extract_field("Infra signature", block)
+            layer["runner_command"] = _extract_field("Runner command", block)
+            layer["realism_rationale"] = _extract_field("Realism rationale", block)
+
+            # Extract scenarios: bullet items under `**Happy-path scenarios...**:`
+            scen_match = re.search(
+                r'\*\*Happy-path scenarios[^*]*\*\*:?\s*\n((?:\s+[-*]\s+.+\n?)+)',
+                block
+            )
+            if scen_match:
+                bullet_block = scen_match.group(1)
+                bullets = re.findall(r'^\s+[-*]\s+(.+?)\s*$', bullet_block, re.MULTILINE)
+                # Filter out template placeholders <...>
+                layer["scenarios"] = [
+                    b.strip().strip('`').strip()
+                    for b in bullets
+                    if b.strip() and not (b.strip().startswith('<') and b.strip().endswith('>'))
+                ]
+
+            result["test_infrastructure"]["layers"].append(layer)
 
     return result
 
@@ -385,27 +467,145 @@ def check_acceptance_criteria(criteria_text: str) -> list[str]:
     return errors
 
 
-def check_testing_task_exists(tasks: list[dict]) -> list[str]:
-    """Check 8: A dedicated testing task exists before validate-all."""
+def check_test_layer_tasks(tasks: list[dict], test_infra: dict) -> list[str]:
+    """Check 8: Per-layer test tasks exist; legacy combined `write-tests` is rejected.
+
+    Required: `unit-tests`, `integration-tests`.
+    Conditional: `e2e-tests` — required when E2E layer is declared and not Skipped.
+    Forbidden: `write-tests` (single combined task is the legacy pattern).
+    """
     errors = []
-    test_task_found = False
-    for task in tasks:
-        tid = task.get("id", "").lower()
-        if "test" in tid and tid != "validate-all":
-            test_task_found = True
-            break
-    if not test_task_found:
+    task_ids = {t.get("id", "").lower() for t in tasks if t.get("id")}
+
+    if "write-tests" in task_ids:
         errors.append(
-            "No dedicated testing task found — plan must include a task with 'test' in its Task ID "
-            "(e.g., 'write-tests', 'backend-tests') before the final validation task"
+            "Legacy single combined `write-tests` task is forbidden. "
+            "Split test work into per-layer tasks: `unit-tests` and `integration-tests` are mandatory; "
+            "`e2e-tests` is required if the E2E layer is enabled in `## Test Infrastructure (User-Declared)`."
         )
+
+    for required in ("unit-tests", "integration-tests"):
+        if required not in task_ids:
+            errors.append(
+                f"Missing mandatory test task `{required}`. "
+                f"Every plan MUST split test work into per-layer tasks (unit-tests + integration-tests, "
+                f"plus e2e-tests if E2E layer is enabled)."
+            )
+
+    # E2E task required if E2E layer is declared and not Skipped
+    e2e_enabled = False
+    for layer in test_infra.get("layers", []):
+        if layer.get("kind") == "e2e":
+            status = (layer.get("status") or "").lower()
+            if status and not status.startswith("skipped"):
+                e2e_enabled = True
+                break
+    if e2e_enabled and "e2e-tests" not in task_ids:
+        errors.append(
+            "E2E Layer is enabled in `## Test Infrastructure (User-Declared)` "
+            "but no `e2e-tests` task exists in Step by Step Tasks."
+        )
+
+    return errors
+
+
+def check_test_infrastructure_section(test_infra: dict) -> list[str]:
+    """Check 9: `## Test Infrastructure (User-Declared)` section is present (plan-as-contract)."""
+    errors = []
+    if not test_infra.get("section_present"):
+        errors.append(
+            "Missing `## Test Infrastructure (User-Declared)` section. "
+            "Migrate plan: rerun /plan_w_team (it now includes the Test Infra Interview at Step 4.5) "
+            "or add the section manually with per-stack `### Unit Layer (X)`, `### Integration Layer (X)`, "
+            "and `### E2E Layer (X)` blocks. The section is the machine-verifiable contract that "
+            "`check_test_layers.py` and the `validator` agent enforce."
+        )
+    return errors
+
+
+def check_test_infrastructure_fields(test_infra: dict) -> list[str]:
+    """Check 10: Each non-Skipped test layer block has all required fields.
+
+    - Integration Layer can never be Skipped (FAIL).
+    - For non-Skipped layers: Files glob, ≥1 scenario, Runner command, Realism rationale required.
+    - Infra signature: required for Integration and (non-Skipped) E2E. Optional for Unit.
+    """
+    errors = []
+    if not test_infra.get("section_present"):
+        return errors  # Already reported by check 9
+
+    layers = test_infra.get("layers", [])
+    if not layers:
+        errors.append(
+            "`## Test Infrastructure (User-Declared)` section has no layer blocks. "
+            "Add at least `### Unit Layer (<stack>)` and `### Integration Layer (<stack>)` blocks."
+        )
+        return errors
+
+    def _kind_label(k: str) -> str:
+        return "E2E" if k == "e2e" else k.capitalize()
+
+    saw_integration = False
+    for layer in layers:
+        kind = layer.get("kind")
+        stack = layer.get("stack")
+        label = f"`### {_kind_label(kind)} Layer ({stack})`"
+        status = (layer.get("status") or "").lower()
+        is_skipped = status.startswith("skipped") or status.startswith("opted out") or status.startswith("opt-out")
+
+        # Integration Layer can never be Skipped
+        if kind == "integration":
+            saw_integration = True
+            if is_skipped:
+                errors.append(
+                    f"{label} is marked as `{layer['status']}` — the Integration Layer is MANDATORY "
+                    "and cannot be skipped or opted out of. Every plan must declare ≥1 integration "
+                    "happy-path scenario per affected user-facing endpoint or use-case."
+                )
+                continue  # Don't check fields if it's wrongly Skipped
+
+        # If layer is legitimately Skipped (only allowed for E2E), no further checks
+        if is_skipped:
+            continue
+
+        # Required fields for non-Skipped layer
+        if not layer.get("files_glob"):
+            errors.append(f"{label} missing `**Files glob:**` field.")
+        if not layer.get("scenarios"):
+            errors.append(
+                f"{label} missing `**Happy-path scenarios:**` — at least one named scenario is required "
+                "(e.g., `ClassName#methodName`, `describe>it`, or `path/to/test::test_name`)."
+            )
+        if not layer.get("runner_command"):
+            errors.append(
+                f"{label} missing `**Runner command:**` — the validator agent will execute this verbatim."
+            )
+        if not layer.get("realism_rationale"):
+            errors.append(
+                f"{label} missing `**Realism rationale:**` — one sentence on why these are the most "
+                "realistic tests this repo can run for this layer."
+            )
+
+        # Infra signature required for Integration and E2E (optional for Unit)
+        if kind in ("integration", "e2e") and not layer.get("infra_signature"):
+            errors.append(
+                f"{label} missing `**Infra signature:**` regex — it must match what `check_test_layers.py` "
+                f"will grep in test files to prove the declared infra is actually used."
+            )
+
+    if not saw_integration:
+        errors.append(
+            "No `### Integration Layer (<stack>)` block found in `## Test Infrastructure (User-Declared)`. "
+            "Integration is MANDATORY for every plan."
+        )
+
     return errors
 
 
 # ── Main Validation ──
 
 def validate_plan(filepath: str, team_dir: str) -> tuple[bool, str]:
-    """Run all 8 checks on a plan file."""
+    """Run all 10 checks on a plan file."""
     logger.info(f"Validating plan: {filepath}")
 
     try:
@@ -466,10 +666,22 @@ def validate_plan(filepath: str, team_dir: str) -> tuple[bool, str]:
         logger.warning(f"Check 7 (stack field): {len(errs)} errors")
     all_errors.extend(errs)
 
-    # Check 8: Dedicated testing task exists
-    errs = check_testing_task_exists(plan["tasks"])
+    # Check 8: Per-layer test tasks exist (legacy `write-tests` rejected)
+    errs = check_test_layer_tasks(plan["tasks"], plan["test_infrastructure"])
     if errs:
-        logger.warning(f"Check 8 (testing task): {len(errs)} errors")
+        logger.warning(f"Check 8 (per-layer test tasks): {len(errs)} errors")
+    all_errors.extend(errs)
+
+    # Check 9: `## Test Infrastructure (User-Declared)` section present
+    errs = check_test_infrastructure_section(plan["test_infrastructure"])
+    if errs:
+        logger.warning(f"Check 9 (test infra section): {len(errs)} errors")
+    all_errors.extend(errs)
+
+    # Check 10: Each non-Skipped layer block has required fields; Integration cannot be Skipped
+    errs = check_test_infrastructure_fields(plan["test_infrastructure"])
+    if errs:
+        logger.warning(f"Check 10 (test infra fields): {len(errs)} errors")
     all_errors.extend(errs)
 
     if all_errors:
@@ -482,7 +694,7 @@ def validate_plan(filepath: str, team_dir: str) -> tuple[bool, str]:
         logger.warning(f"FAIL: {len(all_errors)} errors total")
         return False, msg
 
-    msg = f"Plan '{filepath}' passed all 8 structural checks ({len(plan['tasks'])} tasks validated)"
+    msg = f"Plan '{filepath}' passed all 10 structural checks ({len(plan['tasks'])} tasks validated)"
     logger.info(f"PASS: {msg}")
     return True, msg
 

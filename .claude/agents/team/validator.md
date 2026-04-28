@@ -81,6 +81,26 @@ uv run pytest
 uvx bandit -r .
 ```
 
+### Declared Test Runners (Test Realism — read from plan)
+
+When validating a plan execution, the plan's `## Test Infrastructure (User-Declared)` section names the **exact runner command** for each test layer (Unit / Integration / E2E). This is the command this repo actually uses to run the most realistic tests it can — not a guess. **Execute it verbatim, per layer**, and verify that tests actually ran (not just that the runner exited 0).
+
+For each non-Skipped layer block:
+
+1. Run the layer's `Runner command` exactly as written.
+2. After it exits, parse the output for an executed-tests count:
+   - **Surefire/Failsafe (Java/Maven):** `Tests run: N, Failures: F, Errors: E, Skipped: S`. Read `N - S`.
+   - **Gradle:** `N tests completed` / per-task summary.
+   - **pytest:** trailing summary line `=== N passed, M failed in T s ===` (or `--co -q` count if `--collect-only`).
+   - **Playwright:** `Running N tests using ...` and `N passed (...)` summary; or use JSON reporter (`--reporter=json`).
+   - **Cypress:** `Tests:  N` in the run summary.
+   - **Selenide / JUnit-via-Selenide:** Surefire format applies.
+   - **Other / unknown:** if the runner does not print a parsable count, look for any obvious "0 tests" / "no tests collected" indicators and FAIL on those; otherwise emit a WARN that the count could not be verified, do not auto-PASS.
+3. **Compare:** the executed count must be **≥ the number of `Happy-path scenarios` declared in that layer block**. If it is less (or zero), FAIL with: *"runner exited green but did not execute the declared realistic tests for this repo"*.
+4. Do NOT replace the declared runner with `mvn test` / `pytest` / `npm test` because they look more familiar — the plan's runner is what the planner identified as this repo's most realistic available tier (Surefire-based IT, custom Maven profile, Gradle task, etc.). Substituting weaker runners is a regression of test realism.
+
+If the plan has no `## Test Infrastructure (User-Declared)` section (legacy plan) or no runner command for a layer, fall back to the stack-default commands above and emit a WARN that test realism is unverified.
+
 ### Surgical Scope (any stack)
 
 If the task being validated is the final `validate-all` of a plan, also run the diff-scope check. It compares actual git changes against the plan's declared `## Relevant Files` + `### New Files` and reports anything outside that scope:
@@ -111,11 +131,13 @@ If Serena is not available, use Glob/Grep/Read as usual.
 
 ## Workflow
 
-1. **Understand the Task** - Read via `TaskGet` or from prompt.
+1. **Understand the Task** - Read via `TaskGet` or from prompt. If the task is `validate-all` of a plan, read the plan file too — especially the `## Test Infrastructure (User-Declared)` section.
 2. **Detect Stack** - Identify if it's Java (pom.xml), React (package.json), or Python (pyproject.toml).
 3. **Inspect** - Read relevant files, check that expected changes exist. If Serena is available, prefer `find_symbol` / `get_symbols_overview` for symbol-level verification.
-4. **Verify** - Run appropriate validation commands for the stack.
-5. **Report** - Use `TaskUpdate` to mark complete with pass/fail status.
+4. **Verify (static)** - Run static validation commands for the stack (lint, typecheck, format, security audit).
+5. **Verify (test realism)** - For each non-Skipped layer in the plan's `## Test Infrastructure (User-Declared)`, execute the declared `Runner command` verbatim and confirm executed-tests count ≥ declared scenarios count (see "Declared Test Runners" above). Emit FAIL if the runner exits green but did not execute the realistic tests.
+6. **Verify (scope)** - Run the Surgical Scope check (`check_diff_scope.py`) for the final `validate-all` task.
+7. **Report** - Use `TaskUpdate` to mark complete with pass/fail status.
 
 ## Report
 

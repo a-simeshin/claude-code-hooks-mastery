@@ -86,6 +86,25 @@ Next steps:
 
 If no OpenSpec change was found in Step 0, skip this step silently.
 
+### Step 4.5: Verify Test Layer Realism (post-build)
+
+Run **once** after the per-layer test tasks (`unit-tests`, `integration-tests`, optional `e2e-tests`) complete and before the final `validate-all` task. Confirms that what the team actually built matches the plan's `## Test Infrastructure (User-Declared)` contract:
+
+- For each non-Skipped layer block: `Files glob` resolves to ≥1 file; `Infra signature` regex matches in every resolved file; each declared `Happy-path scenario` has a corresponding test (fuzzy grep on the last identifier-like token).
+- Anti-mock heuristic on integration files (WARN-only): high mock density vs. declared scenarios.
+
+Skip this step if executing a direct task (no plan file).
+
+```bash
+uv run --script .claude/hooks/validators/check_test_layers.py --plan <plan-path>
+```
+
+**Interpreting the result:**
+- **PASS** → declared layers all match what was built. Done.
+- **FAIL** → either the per-layer test tasks did not produce the expected files, the chosen infra is not actually used, or scenario method names drifted from the plan. Address before `validate-all`: re-run the missing builder, rename test methods to match scenarios, or amend the plan if the implementation made a justified deviation.
+
+The hook is generic — it does not know about specific testing libraries. It only verifies what the plan declared. New libraries or stacks need no code change here; just describe them in the plan.
+
 ### Step 5: Verify Surgical Scope (final check)
 
 Run **once** after all builder tasks complete (and after the validator agent's stack checks). Compares actual git changes against the plan's declared `## Relevant Files` + `### New Files` to catch unrelated edits, "while-we're-here" refactors, and scope creep.

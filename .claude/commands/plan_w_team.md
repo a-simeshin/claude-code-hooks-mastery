@@ -21,6 +21,7 @@ hooks:
             --contains '## Relevant Files'
             --contains '## Step by Step Tasks'
             --contains '## Testing Strategy'
+            --contains '## Test Infrastructure (User-Declared)'
             --contains '## Acceptance Criteria'
             --contains '## Team Orchestration'
             --contains '### Team Members'
@@ -62,6 +63,9 @@ GENERAL_PURPOSE_AGENT: `general-purpose`
 - Consider edge cases, error handling, and scalability concerns
 - Understand your role as the team lead. Refer to the `Team Orchestration` section for more details.
 - **CRITICAL — Testing Strategy**: Every plan MUST include a `## Testing Strategy` section defining the test pyramid for this feature. Follow the **80/15/5 ratio**: 80% unit tests, 15% integration/API tests, 5% UI e2e tests. A dedicated testing task MUST exist before the final validation task. Each implementation task should note what test coverage it requires in the `**Tests**` field.
+- **CRITICAL — Plan-as-Contract**: Every plan MUST include a `## Test Infrastructure (User-Declared)` section that records — per stack — machine-verifiable test layer assertions: `Files glob`, `Infra signature` (regex), `Happy-path scenarios` (named), `Runner command`, `Realism rationale`. The post-build hook `check_test_layers.py` and the `validator` agent both rely on this section to verify the realism of what was actually built. The section is filled during the **Test Infra Interview** (Workflow Step 4.5) — never invent it from thin air.
+- **CRITICAL — Mandatory Integration Layer**: The integration happy-path layer is **mandatory and cannot be opted out of** — not even for "internal-only refactor" changes. Every plan MUST declare ≥1 integration scenario per affected user-facing endpoint or use-case. Plans that try to mark `### Integration Layer` as `Skipped`/`Opted out` will be rejected by `plan-reviewer` (criterion 10). The E2E layer is the only optional layer, and only when no frontend is detected in the project.
+- **CRITICAL — Separate Test-Layer Tasks**: The single combined `write-tests` task is forbidden. Plans MUST split the testing work into per-layer task IDs: `unit-tests` and `integration-tests` are mandatory; `e2e-tests` is required if the E2E layer is enabled. Each task gets its own context, its own `**Stack**`, and its own `**Tests**` field.
 - **CRITICAL — Context Routing**: Every task MUST include a `**Stack**` field with keywords from the **Section Routing Catalog** below. The builder agent uses keyword-based context routing to load coding standards. Without correct keywords, the builder works without project standards.
   - Always include at least one **stack keyword** (Java/React/Python) to select the correct stack
   - Then add **section keywords** matching what the task actually does (error handling, testing, etc.)
@@ -306,7 +310,13 @@ IMPORTANT: **PLANNING ONLY** - Do not execute, build, or deploy. Output is a pla
    - Do NOT ask about things that have exactly one obvious answer from the prompt.
    - Do NOT ask about implementation details you can determine from the codebase — save those for step 5.
    - Use `AskUserQuestion` (supports 1-4 questions per call, call multiple times if needed).
-4. Understand Codebase - Without subagents, directly understand existing patterns, architecture, and relevant files. If Serena MCP tools are available, prefer `find_symbol` and `get_symbols_overview` for navigating classes, methods, and dependencies instead of manual Glob/Grep. If Serena is not available, use Glob/Grep/Read as usual.
+4. Understand Codebase - Without subagents, directly understand existing patterns, architecture, and relevant files. **In addition to architecture, MUST analyze the test landscape of the project**: which test frameworks/libraries are present (read `pom.xml`/`build.gradle`/`pyproject.toml`/`package.json`); which test infrastructure (Testcontainers, H2, EmbeddedKafka, Playwright, Cypress, Selenide, fakeredis, respx, etc.) is already in use; which naming conventions identify integration vs. unit tests in this repo (`*IT.java`, `tests/integration/`, `*.e2e.spec.ts`, etc.); **which command actually runs the most realistic tests for this repo today** (Surefire vs. Failsafe vs. a custom Maven profile vs. `pytest -m integration` vs. `npx playwright test` vs. a Gradle task vs. a CI script). This information is the input to Step 4.5. If Serena MCP tools are available, prefer `find_symbol` and `get_symbols_overview` for navigating classes, methods, and dependencies instead of manual Glob/Grep. If Serena is not available, use Glob/Grep/Read as usual.
+4.5. **Test Infra Interview (mandatory)** — On the basis of what you observed in Step 4, conduct a short interview with the user via `AskUserQuestion`. **This step runs every time** — never skip it.
+   - **Q1 (always):** "The integration happy-path layer is mandatory. I see in the project: <observed test libs and conventions>. Which happy-path scenarios should the integration layer cover for this change, and what infrastructure should they use? (Suggest the infra you observed; if the project has Testcontainers, recommend it; if it only has H2/EmbeddedKafka, that is acceptable; otherwise propose adding what fits.)"
+   - **Q2 (only if you observed any frontend in Step 4 — React/Vue/Angular/Svelte/Playwright/Cypress/Selenide):** "I detected <which frontend libs>. The E2E layer is optional. Should this change include an E2E happy-path? Options: enable + which runner; or skip — no UI changes in this change."
+   - **Q3 (only if Q1 answer is ambiguous about scenarios):** "Which exact happy-path scenarios should integration cover? (To avoid 'one test for everything'.)"
+   - Record the user's verbatim answers — they become the basis of the `## Test Infrastructure (User-Declared)` section in the plan, with assertions filled in by you (planner) on the basis of those answers (Files glob, Infra signature regex, scenario names, Runner command, Realism rationale).
+   - The integration layer can never be `Skipped`/`Opted out`. If the user pushes back ("this is a refactor only"), explain that integration happy-path is still mandatory and ask which behavior the change preserves — that becomes the scenario.
 5. **Clarify Implementation (Interview Round 2)** — Now that you know the codebase, check for implementation-specific ambiguities. Ask when:
    - **Multiple patterns exist** — the codebase has more than one way to solve this type of problem, and it's not clear which fits better (e.g., "CartService uses optimistic UI, OrderService uses server-confirmed — which pattern for favorites?"). Present both with pros/cons.
    - **Technical tradeoff with no clear winner** — both options are valid and the choice depends on priorities the user hasn't stated (e.g., "denormalized counter is faster but can drift vs. COUNT query is accurate but slower")
@@ -315,9 +325,9 @@ IMPORTANT: **PLANNING ONLY** - Do not execute, build, or deploy. Output is a pla
    - Do NOT ask about things where the codebase has exactly one established pattern — just follow it.
    - Skip this step entirely if every implementation choice has a single obvious answer from the code.
 6. Design Solution - Develop technical approach including architecture decisions and implementation strategy
-7. Define Testing Strategy - Plan the test pyramid: 80% unit tests, 15% integration/API tests, 5% UI e2e tests. Map each test to the source code it validates. Reference existing test patterns from the codebase.
-8. Define Team Members - Use `ORCHESTRATION_PROMPT` (if provided) to guide team composition. Identify from `.claude/agents/team/*.md` or use `general-purpose`. Include a test-builder member. Document in plan.
-9. Define Step by Step Tasks - Use `ORCHESTRATION_PROMPT` (if provided) to guide task granularity and parallel/sequential structure. Write out tasks with IDs, dependencies, assignments, and `**Tests**` field. Always include a dedicated `write-tests` task before `validate-all`. Document in plan.
+7. Define Testing Strategy + Test Infrastructure (User-Declared) - Plan the test pyramid: 80% unit tests, 15% integration/API tests, 5% UI e2e tests. Map each test to the source code it validates. Reference existing test patterns from the codebase. **Then fill in `## Test Infrastructure (User-Declared)`** based on the interview answers from Step 4.5: per stack, write `### Unit Layer (<stack>)`, `### Integration Layer (<stack>)`, and (if E2E enabled) `### E2E Layer (<stack>)` blocks with the machine-verifiable fields (Files glob, Infra signature, Happy-path scenarios, Runner command, Realism rationale). The Integration Layer block can never be `Skipped`. Multi-stack projects produce one block per stack per layer.
+8. Define Team Members - Use `ORCHESTRATION_PROMPT` (if provided) to guide team composition. Identify from `.claude/agents/team/*.md` or use `general-purpose`. Include test-builder members — one per layer (unit-tests, integration-tests, optional e2e-tests). Document in plan.
+9. Define Step by Step Tasks - Use `ORCHESTRATION_PROMPT` (if provided) to guide task granularity and parallel/sequential structure. Write out tasks with IDs, dependencies, assignments, and `**Tests**` field. **Test work MUST be split into per-layer tasks: `unit-tests` and `integration-tests` are mandatory; `e2e-tests` is required if the E2E layer is enabled in `## Test Infrastructure (User-Declared)`.** The single combined `write-tests` task is forbidden. Document in plan.
 10. Generate Filename - Create a descriptive kebab-case filename based on the plan's main topic
 11. Save Plan - Write the plan to `PLAN_OUTPUT_DIRECTORY/<filename>.md`
 12. **Plan Review** — Run structural validation and architectural review on the saved plan. This ensures plan quality BEFORE OpenSpec artifacts are generated.
@@ -429,6 +439,30 @@ Test pyramid ratio: **80% unit / 15% integration-API / 5% UI e2e**
 ### UI E2E Tests (5%)
 <list critical user flows to cover with e2e tests: login + action, full CRUD flow, cross-page navigation. Use Selenide/Playwright/Cypress as per project.>
 
+## Test Infrastructure (User-Declared)
+
+This section is the machine-verifiable contract that `check_test_layers.py` and the `validator` agent enforce after build. Every field must be filled from the Test Infra Interview answers (Workflow Step 4.5). Multi-stack projects produce one block per stack per layer.
+
+### Unit Layer (<stack name, e.g. Java | Python | React>)
+- **Files glob:** `<glob pattern locating unit test files in this repo, e.g. src/test/java/**/*Test.java>`
+- **Infra signature (regex, optional for unit):** `<regex that proves these are unit tests, or "n/a">`
+- **Happy-path scenarios (≥1 named):**
+  - `<ClassName#methodName or describe>it or path/to/test::test_name>`
+- **Runner command:** `<exact command this repo uses to run these unit tests, e.g. mvn test>`
+- **Realism rationale:** `<one sentence: why this is the appropriate unit-level setup for this repo>`
+
+### Integration Layer (<stack name>)  — MANDATORY, never Skipped
+- **Files glob:** `<glob locating integration test files, e.g. src/test/java/**/*IT.java | tests/integration/**/*.py>`
+- **Infra signature (regex, ≥1 match per file):** `<regex proving the user-chosen infra is actually used, e.g. @Testcontainers|import org\.testcontainers — or @EmbeddedKafka — or import org\.springframework\.boot\.test\.context\.SpringBootTest with H2>`
+- **Happy-path scenarios (≥1 named):**
+  - `<ClassName#methodName | describe>it | path::test_name — one per affected user-facing endpoint or use-case>`
+- **Runner command:** `<the command that actually runs these tests in this repo — surefire/failsafe/pytest -m integration/custom — whatever the repo really uses>`
+- **Realism rationale:** `<one sentence: why these are the most realistic tests this repo can run today (e.g. "Testcontainers PostgreSQL is the real DB the prod uses; failsafe is wired in pom; this is the highest realism tier available")>`
+
+### E2E Layer (<stack name>)  — optional; required only if frontend detected
+- **Status:** `<Enabled | Skipped — no UI changes in this change | Skipped — no frontend in this project>`
+- *(if Enabled, fill the same five fields: Files glob, Infra signature, Happy-path scenarios, Runner command, Realism rationale)*
+
 ## Step by Step Tasks
 
 - IMPORTANT: Execute every step in order, top to bottom. Each task maps directly to a `TaskCreate` call.
@@ -460,28 +494,49 @@ Test pyramid ratio: **80% unit / 15% integration-API / 5% UI e2e**
 
 ### 3. <Continue Pattern>
 
-### N-1. <Write Tests>
-- **Task ID**: write-tests
+### N-3. <Write Unit Tests>
+- **Task ID**: unit-tests
 - **Depends On**: <all implementation task IDs>
 - **Assigned To**: <test-builder team member>
 - **Agent Type**: builder
-- **Stack**: <testing-specific keywords, e.g., "Java MockMvc Mockito assertj allure test structure" or "React jest testing-library tsx">
-- **Parallel**: false
-- Write unit tests (80%) as defined in Testing Strategy
-- Write integration/API tests (15%) as defined in Testing Strategy
-- Write UI e2e tests (5%) if defined in Testing Strategy
+- **Stack**: <unit-testing keywords, e.g., "Java JUnit Mockito assertj test structure" or "Python pytest pytest-mock unit" or "React jest testing-library tsx unit">
+- **Parallel**: <true if integration/e2e tests don't share fixtures>
+- Write unit tests (80%) as defined in Testing Strategy and `### Unit Layer (<stack>)` block
+- Cover service logic, utility functions, component rendering, hooks
 - Follow project test patterns (reference existing test files from Relevant Files)
-- Allure/Jest/pytest annotations as per project convention
+
+### N-2. <Write Integration Tests>  — MANDATORY
+- **Task ID**: integration-tests
+- **Depends On**: <all implementation task IDs>
+- **Assigned To**: <test-builder team member>
+- **Agent Type**: builder
+- **Stack**: <integration-testing keywords, e.g., "Java MockMvc Testcontainers integration test failsafe" or "Python pytest testcontainers httpx asyncclient integration" or "Java MockMvc h2 integration test" — pick keywords matching the user-declared infra in `### Integration Layer (<stack>)`>
+- **Parallel**: false
+- Write integration/API tests (15%) — **happy-path scenarios from `### Integration Layer (<stack>)` are mandatory**
+- Use the exact infra declared in `### Integration Layer (<stack>)` (Testcontainers / EmbeddedKafka / H2 / fakeredis / etc. — whatever the user picked)
+- Test method names should match the scenarios listed in the User-Declared block so `check_test_layers.py` can find them by fuzzy grep
+
+### N-1. <Write E2E Tests>  — only if E2E layer is Enabled
+- **Task ID**: e2e-tests
+- **Depends On**: <all implementation task IDs>
+- **Assigned To**: <test-builder team member>
+- **Agent Type**: builder
+- **Stack**: <e2e-testing keywords, e.g., "Java Selenide e2e page object" or "React Playwright e2e" or "Cypress e2e">
+- **Parallel**: false
+- Skip this task entirely if `### E2E Layer (<stack>)` is `Skipped` in `## Test Infrastructure (User-Declared)`
+- Write UI e2e tests (5%) for the happy-path scenarios declared in `### E2E Layer (<stack>)`
+- Use the runner declared in the `Runner command` field of that block
 
 ### N. <Final Validation Task>
 - **Task ID**: validate-all
-- **Depends On**: <all previous Task IDs including write-tests>
+- **Depends On**: <all previous Task IDs including unit-tests, integration-tests, and e2e-tests if enabled>
 - **Assigned To**: <validator team member>
 - **Agent Type**: <validator agent>
 - **Stack**: <full stack keywords for validation>
 - **Parallel**: false
 - Run all validation commands
-- Verify all tests pass (unit + integration + e2e)
+- For each non-Skipped layer in `## Test Infrastructure (User-Declared)`, execute the declared `Runner command` verbatim and verify that **tests actually ran** (parse runner output for "Tests run: N" / "N passed" / Playwright JSON reporter — N must be ≥ number of declared scenarios for that layer)
+- Run `check_test_layers.py` post-build hook (already covered by `/smart_build` Step 5.5, but verify here too)
 - Verify acceptance criteria met
 
 <continue with additional tasks as needed. Agent types must exist in .claude/agents/team/*.md>
