@@ -37,14 +37,15 @@ Task: "Add GET /api/tutors/{id} with 404 and integration test"
 CLAUDE.md approach:  java-patterns.md (full)     → 4,200 tokens
                      java-testing.md (full)      → 8,600 tokens
                      react-patterns.md (full)    → 13,500 tokens  ← irrelevant
-                     python-patterns.md (full)   → 12,400 tokens  ← irrelevant
-                     Total:                        ~40,000 tokens
+                     python-patterns.md (full)   → 55,000 tokens  ← irrelevant
+                     python-testing.md (full)    → 38,000 tokens  ← irrelevant
+                     Total:                       ~119,000 tokens
 
 Context routing:     java-patterns#basics        → 1,800 tokens
                      java-patterns#errors        → 1,200 tokens
                      java-testing#structure      → 1,400 tokens
                      java-testing#http           → 1,400 tokens
-                     Total:                        ~5,800 tokens   (85% savings)
+                     Total:                        ~5,800 tokens   (95% savings)
 ```
 
 ## How It Works
@@ -112,8 +113,9 @@ pom.xml                       → java-patterns + java-testing
 package.json + "next"         → react-patterns#core + #nextjs
 package.json + "vite"         → react-patterns#core + #vite
 package.json + "react" only   → react-patterns#core
-pyproject.toml + "fastapi"    → python-patterns#core + #fastapi
-pyproject.toml only           → python-patterns#core
+pyproject.toml + "fastapi"    → python-patterns#typing + #fastapi + #concurrency
+pyproject.toml only           → python-patterns#typing (+ #data, #errors по ключам)
+pytest/test/тест keyword      → python-testing#structure (companion auto)
 ```
 
 This means in a monorepo with all three stacks, only the standards matching the current task's file types are loaded — never all at once.
@@ -131,9 +133,10 @@ Each ref file is split into sections with `<!-- section:name -->` markers. Only 
 | File | Sections | Content |
 |------|----------|---------|
 | `java-patterns.md` | `basics`, `java17`, `java21`, `errors`, `search` | Java 17/21, Spring Boot patterns |
-| `java-testing.md` | `structure`, `integration`, `http`, `kafka`, `jdbc`, `mockito`, `e2e`, `maven` | Testcontainers, Podman, Allure, Selenide |
+| `java-testing.md` | `philosophy`, `structure`, `integration`, `http`, `kafka`, `jdbc`, `wiremock`, `mockito`, `e2e`, `maven` | Testcontainers, Podman, Allure, Selenide |
 | `react-patterns.md` | `core`, `nextjs`, `vite` | React 19, Next.js 15 App Router, React Router v7 |
-| `python-patterns.md` | `core`, `fastapi`, `testing` | Python 3.11+ typing, FastAPI + Pydantic v2, Pytest |
+| `python-patterns.md` | `layout`, `typing`, `data`, `errors`, `logging`, `io`, `idiom`, `fastapi`, `concurrency` | Python 3.12+ typing, Pydantic v2, FastAPI, async/await, threadpool, pools, cancellation |
+| `python-testing.md` | `philosophy`, `structure`, `config`, `fixtures`, `parametrize`, `integration`, `unit`, `property`, `snapshot`, `async`, `test-data`, `ci` | Pytest, testcontainers, httpx, hypothesis, freezegun, polyfactory |
 
 ## Why Not LLM Routing?
 

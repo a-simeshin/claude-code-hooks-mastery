@@ -93,10 +93,28 @@ Pick keywords from the **Trigger keywords** column. Each keyword you include loa
 | `react-patterns#core` | `react`, `component`, `hook`, `useState`, `useEffect`, `tsx` | Any React code |
 | `react-patterns#nextjs` | `next.js`, `server component`, `app router`, `server action` | Next.js App Router features |
 | `react-patterns#vite` | `vite`, `react-router`, `code splitting` | Vite bundler, React Router |
-| **Python** | | |
-| `python-patterns#core` | `python`, `typing`, `dataclass`, `asyncio`, `pathlib` | Any Python code |
-| `python-patterns#fastapi` | `fastapi`, `pydantic`, `apirouter`, `depends`, `uvicorn` | FastAPI endpoints, Pydantic models |
-| `python-patterns#testing` | `pytest`, `fixture`, `parametrize`, `conftest`, `httpx` | Python testing |
+| **Python Patterns** | | |
+| `python-patterns#layout` | `pyproject`, `ruff`, `pyright`, `pre-commit`, `src layout` | Project layout, toolchain |
+| `python-patterns#typing` | `python`, `.py`, `typing`, `Protocol`, `Final`, `Literal`, `NewType`, `@override` | Type system baseline (companion auto) |
+| `python-patterns#data` | `dataclass`, `frozen=True`, `slots`, `Pydantic`, `Enum`, `StrEnum` | Data modeling, value objects |
+| `python-patterns#errors` | `python exception`, `ExceptionGroup`, `raise from`, `custom exception` | Error handling, exception hierarchy |
+| `python-patterns#logging` | `structlog`, `python logging`, `logger.bind` | Structured logging |
+| `python-patterns#io` | `pathlib`, `Path`, `context manager`, `aiofiles` | I/O, resources |
+| `python-patterns#idiom` | `comprehension`, `match/case`, `functools`, `lru_cache`, `singledispatch` | Functional idioms |
+| `python-patterns#fastapi` | `fastapi`, `apirouter`, `depends`, `lifespan`, `pydantic-settings`, `field_validator` | FastAPI endpoints, Pydantic |
+| `python-patterns#concurrency` | `asyncio`, `gather`, `taskgroup`, `connection pool`, `cancellation`, `httpx`, `streamingresponse`, `sync клиент` | Async/concurrency for FastAPI |
+| **Python Testing** | | |
+| `python-testing#structure` | `pytest`, `pytest.raises`, `arrange act assert` | Pytest baseline (companion auto) |
+| `python-testing#config` | `asyncio_mode`, `strict-markers`, `xfail_strict`, `conftest hierarchy` | Pytest configuration |
+| `python-testing#fixtures` | `fixture`, `scope`, `factory fixture`, `polyfactory` | Fixtures, factories |
+| `python-testing#parametrize` | `parametrize`, `pytest.param`, `data-driven` | Parametrized tests |
+| `python-testing#integration` | `testcontainers`, `httpx asyncclient`, `respx`, `asgitransport` | Integration tests |
+| `python-testing#unit` | `pytest-mock`, `mocker`, `autospec`, `freezegun` | Unit tests with mocks |
+| `python-testing#property` | `hypothesis`, `property-based`, `@given` | Property-based testing |
+| `python-testing#snapshot` | `syrupy`, `inline-snapshot` | Snapshot testing |
+| `python-testing#async` | `pytest-asyncio`, `anyio backend` | Async tests |
+| `python-testing#test-data` | `polyfactory`, `faker`, `test data builder` | Test data generation |
+| `python-testing#ci` | `coverage`, `pytest-xdist`, `pytest-randomly`, `pytest-timeout`, `diff-cover` | CI gates, coverage |
 
 ### Team Orchestration
 

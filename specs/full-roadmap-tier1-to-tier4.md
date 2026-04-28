@@ -56,7 +56,8 @@ Phased implementation following the research-backed principle: **"1 iteration wi
 #### Tier 1
 - `CLAUDE.md` — Project conventions (50-100 lines)
 - `.claude/refs/react-patterns.md` — React/TypeScript patterns with section markers
-- `.claude/refs/fastapi-patterns.md` — Python/FastAPI patterns with section markers
+- `.claude/refs/python-patterns.md` — Python/FastAPI patterns with section markers
+- `.claude/refs/python-testing.md` — Python testing standards (pytest, hypothesis, testcontainers)
 
 #### Tier 2
 - `.claude/skills/java/*.md` — Java skills (spring-controller, spring-service, etc.)
@@ -200,14 +201,27 @@ Research-grade implementations:
 - **Assigned To**: builder-foundation
 - **Agent Type**: builder
 - **Parallel**: true (can run alongside tier1-react-ref)
-- Create `.claude/refs/fastapi-patterns.md` with section markers:
-  - `<!-- section:basics -->` — Code style (ruff rules, type hints, Pydantic models)
-  - `<!-- section:endpoints -->` — FastAPI endpoint patterns (routers, dependencies, responses)
-  - `<!-- section:models -->` — Pydantic v2 patterns (validators, serializers, settings)
-  - `<!-- section:testing -->` — Pytest patterns (fixtures, parametrize, httpx AsyncClient)
-  - `<!-- section:security -->` — Security patterns (OAuth2, JWT, CORS, input validation)
-- Use Context7 to get latest FastAPI docs
-- Target: 400-600 lines
+- Create `.claude/refs/python-patterns.md` with section markers:
+  - `<!-- section:layout -->` — Project layout, toolchain (pyproject.toml, ruff, pyright, pre-commit)
+  - `<!-- section:typing -->` — Type system (Protocol, Final, Literal, NewType, Self, @override)
+  - `<!-- section:data -->` — Data modeling (dataclass frozen+slots+kw_only, Pydantic, Enum)
+  - `<!-- section:errors -->` — Exception hierarchy, raise from, ExceptionGroup
+  - `<!-- section:logging -->` — structlog, contextvars, QueueHandler
+  - `<!-- section:io -->` — pathlib, context managers, aiofiles
+  - `<!-- section:idiom -->` — comprehensions, match/case, functools
+  - `<!-- section:fastapi -->` — APIRouter, Pydantic v2, Depends, lifespan, response_model
+  - `<!-- section:concurrency -->` — async/await, gather/TaskGroup, pools, timeouts, cancellation
+- Create `.claude/refs/python-testing.md` with section markers:
+  - `<!-- section:structure -->` — pytest naming, AAA, plain assert, pytest.raises
+  - `<!-- section:fixtures -->` — fixture scopes, conftest hierarchy, factory fixtures
+  - `<!-- section:parametrize -->` — parametrize, pytest.param, indirect
+  - `<!-- section:integration -->` — testcontainers, httpx AsyncClient, respx
+  - `<!-- section:unit -->` — pytest-mock, autospec, freezegun
+  - `<!-- section:property -->` — Hypothesis, strategies
+  - `<!-- section:async -->` — pytest-asyncio, anyio
+  - `<!-- section:ci -->` — coverage, xdist, randomly, timeout, diff-cover
+- Use Context7 to get latest FastAPI / pytest docs
+- Target: ~2700 lines patterns + ~1900 lines testing
 
 ### 4. Downgrade Validator Agent to Sonnet (Tier 1.4)
 - **Task ID**: tier1-validator-model
@@ -217,7 +231,7 @@ Research-grade implementations:
 - **Parallel**: true
 - Edit `.claude/agents/team/validator.md`: change `model: opus` → `model: sonnet`
 - Rationale: Validator is read-only (disallowedTools: Write, Edit), runs verification commands and reads files. Sonnet ($3/M) is sufficient for read-only checks vs opus ($15/M). Saves 80% on validation cost.
-- Update context-router.md to add react-patterns and fastapi-patterns sections to the Available Sections table
+- Update context-router.md to add react-patterns, python-patterns, and python-testing sections to the Available Sections table
 
 ### 5. Validate Tier 1 Deliverables
 - **Task ID**: tier1-validate
@@ -227,13 +241,15 @@ Research-grade implementations:
 - **Parallel**: false
 - Verify CLAUDE.md exists and is 50-100 lines
 - Verify `.claude/refs/react-patterns.md` exists with section markers (components, hooks, state, routing)
-- Verify `.claude/refs/fastapi-patterns.md` exists with section markers (basics, endpoints, models, testing, security)
+- Verify `.claude/refs/python-patterns.md` exists with section markers (layout, typing, data, errors, logging, io, idiom, fastapi, concurrency)
+- Verify `.claude/refs/python-testing.md` exists with section markers (structure, fixtures, parametrize, integration, unit, property, async, ci)
 - Verify validator.md has `model: sonnet`
-- Verify context-router.md includes react-patterns and fastapi-patterns sections
+- Verify context-router.md includes react-patterns, python-patterns, and python-testing sections
 - Run section_loader.py with test inputs to verify sections load correctly:
   ```bash
   echo '{"sections": ["react-patterns#components"]}' | uv run --script .claude/hooks/section_loader.py
-  echo '{"sections": ["fastapi-patterns#endpoints"]}' | uv run --script .claude/hooks/section_loader.py
+  echo '{"sections": ["python-patterns#fastapi"]}' | uv run --script .claude/hooks/section_loader.py
+  echo '{"sections": ["python-testing#integration"]}' | uv run --script .claude/hooks/section_loader.py
   ```
 
 ---
@@ -578,7 +594,7 @@ Research-grade implementations:
 - Full system check:
   - All 4 tiers implemented
   - CLAUDE.md populated (50-100 lines)
-  - 4 ref files (java-patterns, java-testing, react-patterns, fastapi-patterns)
+  - 5 ref files (java-patterns, java-testing, react-patterns, python-patterns, python-testing)
   - Skills directory with 12+ skill files
   - 5 agent definitions (builder, validator, monitor, context-router, critic)
   - Validator on sonnet model
@@ -592,10 +608,11 @@ Research-grade implementations:
 ### Tier 1 (Foundation)
 - [ ] CLAUDE.md exists, 50-100 lines, covers all stacks and conventions
 - [ ] `.claude/refs/react-patterns.md` exists with 4 sections (components, hooks, state, routing)
-- [ ] `.claude/refs/fastapi-patterns.md` exists with 5 sections (basics, endpoints, models, testing, security)
+- [ ] `.claude/refs/python-patterns.md` exists with 9 sections (layout, typing, data, errors, logging, io, idiom, fastapi, concurrency)
+- [ ] `.claude/refs/python-testing.md` exists with 8+ sections (structure, fixtures, parametrize, integration, unit, property, async, ci)
 - [ ] section_loader.py correctly loads new sections
 - [ ] validator.md has `model: sonnet`
-- [ ] context-router.md includes react-patterns and fastapi-patterns
+- [ ] context-router.md includes react-patterns, python-patterns, and python-testing
 
 ### Tier 2 (Architecture)
 - [ ] `.claude/skills/` directory exists with 12+ skill files across 3 stacks
@@ -629,13 +646,16 @@ Execute these commands to validate the task is complete:
 ```bash
 # Tier 1: Check files exist and have content
 wc -l CLAUDE.md  # Should be 50-100 lines
-wc -l .claude/refs/react-patterns.md  # Should be 400-600 lines
-wc -l .claude/refs/fastapi-patterns.md  # Should be 400-600 lines
+wc -l .claude/refs/react-patterns.md   # Should be 400-600 lines
+wc -l .claude/refs/python-patterns.md  # Should be ~2700 lines (9 sections)
+wc -l .claude/refs/python-testing.md   # Should be ~1900 lines (12 sections)
 grep "model: sonnet" .claude/agents/team/validator.md  # Should match
 
 # Tier 1: Test section loading
 echo '{"sections": ["react-patterns#components"]}' | uv run --script .claude/hooks/section_loader.py
-echo '{"sections": ["fastapi-patterns#endpoints"]}' | uv run --script .claude/hooks/section_loader.py
+echo '{"sections": ["python-patterns#fastapi"]}' | uv run --script .claude/hooks/section_loader.py
+echo '{"sections": ["python-patterns#concurrency"]}' | uv run --script .claude/hooks/section_loader.py
+echo '{"sections": ["python-testing#integration"]}' | uv run --script .claude/hooks/section_loader.py
 
 # Tier 2: Check skills structure
 find .claude/skills -name "*.md" | wc -l  # Should be >= 12

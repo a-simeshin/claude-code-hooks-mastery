@@ -157,12 +157,22 @@ HAS_REACT +          REACT_FRAMEWORK=nextjs            → react-patterns#core +
                      REACT_FRAMEWORK=none              → react-patterns#core
                      REACT_FRAMEWORK=unknown           → react-patterns#core + react-patterns#nextjs + react-patterns#vite
 
-HAS_PYTHON +         fastapi, endpoint, api,            → .claude/refs/fastapi-patterns.md
+HAS_PYTHON +         fastapi, endpoint, api,            → .claude/refs/python-patterns.md (sections: fastapi, typing)
                      pydantic, router, uvicorn
 
-HAS_PYTHON +         PYTHON_FRAMEWORK=fastapi           → python-patterns#core + python-patterns#fastapi + python-patterns#testing
-                     PYTHON_FRAMEWORK=none             → python-patterns#core + python-patterns#testing
-                     PYTHON_FRAMEWORK=unknown          → python-patterns#core + python-patterns#fastapi + python-patterns#testing
+HAS_PYTHON +         async, asyncio, concurrency,       → .claude/refs/python-patterns.md (section: concurrency)
+                     gather, taskgroup, httpx,
+                     pool, timeout, контекстная блокировка,
+                     sync клиент в async, lifespan,
+                     graceful shutdown
+
+HAS_PYTHON +         test, тест, pytest, fixture,       → .claude/refs/python-testing.md
+                     parametrize, hypothesis,
+                     testcontainers, conftest
+
+HAS_PYTHON +         PYTHON_FRAMEWORK=fastapi           → python-patterns#typing + #fastapi + #concurrency (+ python-testing#structure если есть тесты)
+                     PYTHON_FRAMEWORK=none             → python-patterns#typing + #data + #errors (+ python-testing#structure если есть тесты)
+                     PYTHON_FRAMEWORK=unknown          → python-patterns#typing + #fastapi + #concurrency + python-testing#structure
 
 ANY project          (always check)                     → CLAUDE.md in project root
 ```
@@ -235,8 +245,11 @@ Grep("Dashboard|Metric|Controller")
 │   ├─ HAS_REACT + keywords (component, button, ui, hook, frontend)?
 │   │   └─ Read .claude/refs/react-patterns.md
 │   │
-│   └─ HAS_PYTHON + keywords (api, endpoint, fastapi)?
-│       └─ Read .claude/refs/fastapi-patterns.md
+│   ├─ HAS_PYTHON?
+│   │   ├─ ALWAYS: Read .claude/refs/python-patterns.md
+│   │   │  (sections: typing baseline + относящиеся к задаче — fastapi/concurrency/data/errors/...)
+│   │   ├─ Test/тест keywords? → Read .claude/refs/python-testing.md
+│   │   └─ Keywords (fastapi, pydantic)? → Context7: fastapi/pydantic
 │
 ├─ Step 5: If task is vague, explore with Glob
 │   │

@@ -811,5 +811,3 @@ Before submitting Java code:
 - [ ] Pattern matching в switch
 - [ ] Virtual threads для I/O-bound
 - [ ] Sequenced collections API
-
-**Testing:** см. `.claude/refs/java-testing.md`

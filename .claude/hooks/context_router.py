@@ -110,24 +110,179 @@ ROUTING_TABLE: list[tuple[str, list[str], int]] = [
         "createbrowserrouter",
     ], 8),
 
-    # ── Python Patterns ──
-    ("python-patterns#core", [
-        "python", "typing", "type hint", "dataclass",
-        "await", "pathlib", "logging",
-        "enum", "abc", "protocol", ".py",
-        "pydantic", "fastapi", "pytest", "asyncio",
+    # ── Python Patterns (granular sections) ──
+    ("python-patterns#layout", [
+        "project layout", "src layout", "src-layout",
+        "pyproject", "pyproject.toml",
+        "ruff", "pyright", "pre-commit",
+        "uv lock", "poetry lock", "toolchain",
+        "layout проекта", "структура проекта python",
+    ], 4),
+    ("python-patterns#typing", [
+        "python", ".py",
+        "typing", "type hint", "type-hint", "type hints",
+        "mypy", "pyright",
+        "typevar", "newtype", "literal type", "literal[",
+        "final type", "self type", "@override",
+        "assert_never", "type_checking", "type alias",
+        "protocol", "typing.protocol",
+        "abc", "abstractmethod",
+        "generic[", "generic typing",
+        "аннотации типов", "типизация",
+        "type system",
     ], 10),
+    ("python-patterns#data", [
+        "dataclass", "dataclasses",
+        "frozen=true", "slots=true", "kw_only",
+        "namedtuple", "typeddict",
+        "value object", "value-object",
+        "enum python", "strenum", "intenum",
+        "data class", "data modeling python",
+        "domain model python",
+    ], 7),
+    ("python-patterns#errors", [
+        "python exception", "exceptiongroup",
+        "raise from", "raise ... from",
+        "custom exception python", "exception hierarchy python",
+        "питон ошибк", "питон исключени",
+        "обработка ошибок python",
+        "except*",
+    ], 7),
+    ("python-patterns#logging", [
+        "structlog", "structured logging python",
+        "python logging", "лог в python",
+        "logger.bind", "contextvars logging",
+        "queuehandler",
+    ], 5),
+    ("python-patterns#io", [
+        "pathlib", "path object python",
+        "контекстный менеджер", "context manager python",
+        "with statement python",
+        "asynccontextmanager", "contextmanager",
+        "aiofiles",
+    ], 5),
+    ("python-patterns#idiom", [
+        "list comprehension", "dict comprehension", "set comprehension",
+        "comprehension python",
+        "match case", "match-case", "pattern matching python",
+        "functools", "lru_cache", "cached_property", "singledispatch",
+        "@cache", "@lru_cache",
+    ], 6),
     ("python-patterns#fastapi", [
-        "fastapi", "apirouter", "pydantic", "basemodel",
-        "depends", "dependency injection", "lifespan",
-        "backgroundtask", "httpexception",
+        "fastapi", "apirouter",
+        "pydantic", "basemodel",
+        "depends", "dependency injection python",
+        "lifespan",
+        "backgroundtask", "background tasks fastapi",
+        "httpexception",
         "uvicorn",
+        "response_model", "status_code",
+        "pydantic-settings", "basesettings",
+        "field_validator", "model_validator", "computed_field",
+        "endpoint fastapi", "api endpoint python",
+        "middleware fastapi",
+        "exception_handler",
+    ], 9),
+    ("python-patterns#concurrency", [
+        "asyncio", "async def", "await",
+        "asyncio.gather", "gather python",
+        "taskgroup", "task group",
+        "asyncio.semaphore", "asyncio.lock",
+        "race condition", "race-condition",
+        "contextvar", "contextvars",
+        "cancellation", "cancellederror", "cancelled error",
+        "connection pool", "pool_size", "max_connections",
+        "asyncpg", "sqlalchemy async",
+        "selectinload", "joinedload", "missinggreenlet",
+        "threadpool", "to_thread", "run_in_executor",
+        "processpool", "process pool",
+        "uvloop",
+        "graceful shutdown",
+        "liveness", "readiness",
+        "backpressure", "rate limit", "rate-limit", "circuit breaker",
+        "tenacity",
+        "streamingresponse", "streaming response",
+        "sync client", "sync клиент", "синхронный клиент",
+        "блокирующий клиент", "blocking client",
+        "block event loop", "event loop lag",
+        "многопоточн", "concurrency",
+        "httpx", "asyncclient",
+        "fastapi performance", "production fastapi",
+    ], 9),
+
+    # ── Python Testing (separate file) ──
+    ("python-testing#philosophy", [
+        "test strategy python", "тестовая стратегия python",
+        "test pyramid python", "что тестировать в python",
+        "integration vs unit python",
+    ], 4),
+    ("python-testing#structure", [
+        "pytest", "pytest naming",
+        "pytest assertion", "pytest plain assert",
+        "arrange act assert", "given-when-then python",
+        "pytest.raises", "pytest.approx",
+        "pytest test class",
+    ], 10),
+    ("python-testing#config", [
+        "pytest config", "pyproject pytest",
+        "asyncio_mode", "strict-markers", "strict markers",
+        "xfail_strict", "conftest hierarchy",
+        "pytest.ini",
+        "filterwarnings",
+    ], 5),
+    ("python-testing#fixtures", [
+        "fixture", "фикстур",
+        "fixture scope", "conftest",
+        "session scope", "function scope", "module scope",
+        "yield fixture", "factory fixture",
+        "async fixture",
     ], 8),
-    ("python-patterns#testing", [
-        "pytest", "fixture", "parametrize", "conftest",
-        "patch", "httpx", "asyncclient", "testclient",
-        "coverage",
+    ("python-testing#parametrize", [
+        "parametrize", "parameterize",
+        "pytest.param", "data-driven test python",
+        "indirect parametrize",
+    ], 7),
+    ("python-testing#integration", [
+        "testcontainers", "testcontainers-python",
+        "asgi transport", "asgitransport",
+        "asyncclient test", "httpx asyncclient",
+        "respx", "responses python",
+        "real database test", "real postgres test",
+        "интеграционный тест python",
+        "integration test python",
     ], 8),
+    ("python-testing#unit", [
+        "pytest-mock", "mocker fixture",
+        "autospec", "create_autospec",
+        "fake repository", "protocol fake",
+        "freezegun", "time-machine", "freeze time",
+        "юнит-тест python",
+        "unit test python",
+        "mock python",
+    ], 7),
+    ("python-testing#property", [
+        "hypothesis", "property-based", "property based test",
+        "generative test", "hypothesis strategies",
+        "@given",
+    ], 5),
+    ("python-testing#snapshot", [
+        "snapshot test python", "syrupy", "inline-snapshot",
+        "snapshot pytest",
+    ], 4),
+    ("python-testing#async", [
+        "pytest-asyncio", "async test python",
+        "asyncio_mode auto", "anyio backend",
+    ], 6),
+    ("python-testing#test-data", [
+        "polyfactory", "faker",
+        "test data builder python", "test factory python",
+        "build_order",
+    ], 5),
+    ("python-testing#ci", [
+        "pytest coverage", "pytest-xdist", "pytest parallel",
+        "pytest-randomly", "pytest-timeout",
+        "diff-cover", "branch coverage python",
+    ], 4),
 ]
 
 # Companion rules: if ANY section with prefix matched → auto-include companion
@@ -135,18 +290,20 @@ COMPANION_RULES: list[tuple[str, str]] = [
     ("java-patterns#", "java-patterns#basics"),
     ("java-testing#", "java-testing#structure"),
     ("react-patterns#", "react-patterns#core"),
-    ("python-patterns#", "python-patterns#core"),
+    ("python-patterns#", "python-patterns#typing"),     # baseline для всех Python задач
+    ("python-testing#", "python-testing#structure"),    # baseline для всех pytest задач
 ]
 
 # Detect "test" keyword per stack → auto-include testing sections
 TEST_KEYWORD_RULES: list[tuple[list[str], str]] = [
     # If Java context + "test" mentioned → java-testing#structure
     (["java", "spring", "controller", ".java", "jpa"], "java-testing#structure"),
-    # If Python context + "test" mentioned → python-patterns#testing
-    (["python", "fastapi", "pydantic", ".py", "pytest"], "python-patterns#testing"),
+    # If Python context + "test/тест" mentioned → python-testing#structure
+    (["python", "fastapi", "pydantic", ".py", "pytest", "asyncio"],
+     "python-testing#structure"),
 ]
 
-MAX_SECTIONS = 6
+MAX_SECTIONS = 8
 
 
 def normalize(text: str) -> str:
@@ -181,7 +338,12 @@ def route(task: str) -> dict:
         for kw in ["java", "spring", "jpa", "maven", "gradle", ".java",
                     "spring boot", "springboot", "lombok", "controller"]
     )
-    if not explicit_java and ("python-patterns" in stacks or "react-patterns" in stacks):
+    python_or_react_matched = (
+        "python-patterns" in stacks
+        or "python-testing" in stacks
+        or "react-patterns" in stacks
+    )
+    if not explicit_java and python_or_react_matched:
         unique = [(s, p, kw) for s, p, kw in unique
                   if not s.startswith("java-")]
         seen = {s for s, _, _ in unique}
