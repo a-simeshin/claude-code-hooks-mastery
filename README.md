@@ -93,6 +93,20 @@ This fork extends [@disler](https://github.com/disler)'s original repository.
 | **OpenSpec** | Optional living specs integration — explore existing specs, propose changes after plan review, track task progress during build | Not in original | [docs/openspec.md](docs/openspec.md) |
 | **Install / Uninstall** | One-line `curl` install + non-interactive mode for CI/Claude Code | Manual setup in original | [docs/install.md](docs/install.md) |
 
+## CLAUDE.md Coverage
+
+This fork's flow **fully covers** the four behavioral guidelines from [andrej-karpathy-skills/CLAUDE.md](https://github.com/forrestchang/andrej-karpathy-skills/blob/main/CLAUDE.md) (Think Before Coding, Simplicity First, Surgical Changes, Goal-Driven Execution) — every section is enforced by an automated mechanism, not left to LLM discretion.
+
+Compatible with any project that drops its own `CLAUDE.md` in the root: the `builder` agent reads it via `Glob("**/CLAUDE.md")` and merges it on top of these defaults.
+
+| CLAUDE.md section | Enforced by | Strength |
+|-------------------|-------------|----------|
+| **§1 Think Before Coding** — assumptions, ambiguity, tradeoffs | `plan_w_team` Interview Round 1 + Round 2 (`AskUserQuestion`); plan-reviewer criteria #1 Problem Alignment, #3 Questions Gap | Strong — formalized gate |
+| **§2 Simplicity First** — minimum code, no speculative abstractions | plan-reviewer criterion #5 Overengineering — explicit FAIL | Strong — gate |
+| **§3 Surgical Changes** — touch only what's needed, no scope creep | plan-reviewer criterion #9 Surgical Scope (pre-build); `check_diff_scope.py` (post-build, compares git diff vs plan's Relevant Files) | Strong — gate + post-check |
+| **§3 Match existing style** | Stack-aware refs auto-loaded by `context_router.py` (`refs/*-patterns.md`) + Context7 for live API docs | Strong |
+| **§4 Goal-Driven Execution** — verifiable success criteria | `validate_plan.py` requires `## Acceptance Criteria`; `validator_dispatcher.py` runs ruff/ty/eslint/tsc/spotless on every Write/Edit | Strong — auto-enforced |
+
 ## MCP Integrations
 
 ### [Context7](https://github.com/upstash/context7) (optional)

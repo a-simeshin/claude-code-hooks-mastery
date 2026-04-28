@@ -86,6 +86,24 @@ Next steps:
 
 If no OpenSpec change was found in Step 0, skip this step silently.
 
+### Step 5: Verify Surgical Scope (final check)
+
+Run **once** after all builder tasks complete (and after the validator agent's stack checks). Compares actual git changes against the plan's declared `## Relevant Files` + `### New Files` to catch unrelated edits, "while-we're-here" refactors, and scope creep.
+
+Skip this step if executing a direct task (no plan file).
+
+```bash
+uv run --script .claude/hooks/validators/check_diff_scope.py --plan <plan-path>
+```
+
+Optional: pass `--baseline <ref>` (e.g. `main`, branch point) to also include committed changes since that ref. Without `--baseline`, only the working tree + index are inspected (cheaper, suits a single-session run).
+
+**Interpreting the result:**
+- **PASS** → all changes trace back to declared scope. Done.
+- **FAIL** → out-of-scope files listed. For each one, ask: was it a necessary discovery (add it to the plan retroactively + note why) or scope creep (revert)? Do not silently accept.
+
+This is advisory — the script exits 1 on FAIL but does not block. The decision to revert vs. amend the plan stays with you.
+
 ## Example
 
 **Task:** "Добавь endpoint /users с тестами"

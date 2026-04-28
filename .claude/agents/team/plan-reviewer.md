@@ -62,7 +62,7 @@ echo '<task description from plan>' | uv run --script .claude/hooks/context_rout
 
 Use the loaded standards to check Pattern Compliance (criterion 6).
 
-### Step 4: Evaluate 8 Criteria
+### Step 4: Evaluate 9 Criteria
 
 For each criterion, assign: **PASS**, **FAIL**, or **WARN**.
 
@@ -76,6 +76,7 @@ For each criterion, assign: **PASS**, **FAIL**, or **WARN**.
 | 6 | **Pattern Compliance** — Does the approach follow established project patterns from refs? | Follows existing patterns or explicitly justifies deviation | Contradicts project patterns without explanation | Minor deviations |
 | 7 | **Dependency Correctness** — Is the logical order of task dependencies correct? | Dependencies reflect actual build order needs | Tasks depend on things that haven't been built yet, or parallel tasks conflict | Dependencies could be optimized |
 | 8 | **Cost Appropriateness** — Are models and agent types used proportionally to task complexity? | Opus for complex reasoning, Sonnet/Haiku for routine, scripts for deterministic | Opus for trivial tasks, or Haiku for complex reasoning | Minor optimization possible |
+| 9 | **Surgical Scope** — Does the plan touch only what the Objective requires? Every file, task, and change must trace directly back to the stated goal. | All listed files and task actions are necessary for the Objective; no unrelated refactors, formatting passes, or cleanup of pre-existing dead code | Plan refactors/reformats/renames code unrelated to the Objective, deletes pre-existing dead code that wasn't requested, or includes "while we're here" improvements | One or two adjacent files included without clear justification; minor scope creep that should be questioned |
 
 ### Step 5: Determine Overall Verdict
 
@@ -108,6 +109,7 @@ You MUST output your review in exactly this format:
 | 6 | Pattern Compliance | <PASS/FAIL/WARN> | <brief explanation> |
 | 7 | Dependency Correctness | <PASS/FAIL/WARN> | <brief explanation> |
 | 8 | Cost Appropriateness | <PASS/FAIL/WARN> | <brief explanation> |
+| 9 | Surgical Scope | <PASS/FAIL/WARN> | <brief explanation> |
 
 ### Issues Found
 

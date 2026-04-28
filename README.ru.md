@@ -93,6 +93,20 @@ flowchart TB
 | **OpenSpec** | Опциональная интеграция с living specs — чтение существующих спецификаций, создание изменений после ревью плана, отслеживание прогресса задач во время сборки | Нет в оригинале | [docs/openspec.md](docs/openspec.md) |
 | **Install / Uninstall** | Установка одной командой `curl` + неинтерактивный режим для CI/Claude Code | Ручная настройка в оригинале | [docs/install.md](docs/install.md) |
 
+## Покрытие CLAUDE.md
+
+Flow этого форка **полностью покрывает** четыре поведенческих правила из [andrej-karpathy-skills/CLAUDE.md](https://github.com/forrestchang/andrej-karpathy-skills/blob/main/CLAUDE.md) (Think Before Coding, Simplicity First, Surgical Changes, Goal-Driven Execution) — каждая секция обеспечена автоматическим механизмом, а не отдана на усмотрение LLM.
+
+Совместимо с любым проектом, где в корне лежит свой `CLAUDE.md`: агент `builder` читает его через `Glob("**/CLAUDE.md")` и накладывает поверх этих дефолтов.
+
+| Секция CLAUDE.md | Чем обеспечена | Степень |
+|------------------|----------------|---------|
+| **§1 Think Before Coding** — допущения, неоднозначности, tradeoffs | `plan_w_team` Interview Round 1 + Round 2 (`AskUserQuestion`); plan-reviewer критерии #1 Problem Alignment, #3 Questions Gap | Сильно — формализованный гейт |
+| **§2 Simplicity First** — минимум кода, без спекулятивных абстракций | plan-reviewer критерий #5 Overengineering — явный FAIL | Сильно — гейт |
+| **§3 Surgical Changes** — трогать только нужное, без скоупкрипа | plan-reviewer критерий #9 Surgical Scope (до сборки); `check_diff_scope.py` (после сборки, сравнивает git diff с Relevant Files плана) | Сильно — гейт + пост-проверка |
+| **§3 Match existing style** | Stack-aware refs автозагружаются `context_router.py` (`refs/*-patterns.md`) + Context7 для актуальных API | Сильно |
+| **§4 Goal-Driven Execution** — верифицируемые критерии успеха | `validate_plan.py` требует `## Acceptance Criteria`; `validator_dispatcher.py` запускает ruff/ty/eslint/tsc/spotless на каждом Write/Edit | Сильно — автоэнфорс |
+
 ## MCP-интеграции
 
 ### [Context7](https://github.com/upstash/context7) (опционально)

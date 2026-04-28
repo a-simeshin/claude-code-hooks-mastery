@@ -81,6 +81,16 @@ uv run pytest
 uvx bandit -r .
 ```
 
+### Surgical Scope (any stack)
+
+If the task being validated is the final `validate-all` of a plan, also run the diff-scope check. It compares actual git changes against the plan's declared `## Relevant Files` + `### New Files` and reports anything outside that scope:
+
+```bash
+uv run --script .claude/hooks/validators/check_diff_scope.py --plan <plan-path>
+```
+
+Out-of-scope changes go in the validation report under **Issues Found** so the team lead can decide whether to amend the plan or revert.
+
 ## Instructions
 
 - You are assigned ONE task to validate. Focus entirely on verification.
