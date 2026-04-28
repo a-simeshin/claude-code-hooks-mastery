@@ -80,8 +80,8 @@ OpenSpec Change Updated: openspec/changes/<change-name>/tasks.md
 Completed: X/Y tasks
 
 Next steps:
-- Run `/opsx:verify` to validate implementation against specs
-- Run `/opsx:archive` to finalize and merge delta specs
+- Run `/openspec-apply-change` to merge delta specs into the main service spec
+- Run `/openspec-archive-change` to finalize and archive the change
 ```
 
 If no OpenSpec change was found in Step 0, skip this step silently.

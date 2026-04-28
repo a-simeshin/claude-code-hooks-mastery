@@ -194,45 +194,43 @@ TaskUpdate({
 TaskList({})  // Filter by owner to find assigned work
 ```
 
-#### Agent Deployment with Task Tool
+#### Agent Deployment with Agent Tool
 
-**Task** - Deploy an agent to do work:
+**Agent** — spawn a subagent to do work (formerly named `Task`; renamed in Claude Code 2.x):
 ```typescript
-Task({
+Agent({
   description: "Implement auth endpoints",
   prompt: "Implement the authentication endpoints as specified in Task 1...",
   subagent_type: "general-purpose",
-  model: "opus",  // or "opus" for complex work, "haiku" for VERY simple
+  model: "opus",            // "opus" for complex reasoning, "sonnet" balanced, "haiku" for very simple
   run_in_background: false  // true for parallel execution
 })
 // Returns: agentId (e.g., "a1b2c3")
 ```
 
-#### Resume Pattern
+#### Resume Pattern (continue an existing agent)
 
-Store the agentId to continue an agent's work with preserved context:
+The `Agent` tool no longer accepts a `resume` parameter. To continue a previously spawned agent with preserved context, use the `SendMessage` tool, passing the agent's id or name as `to`:
 
 ```typescript
-// First deployment - agent works on initial task
-Task({
+// First deployment — fresh agent
+Agent({
   description: "Build user service",
   prompt: "Create the user service with CRUD operations...",
   subagent_type: "general-purpose"
 })
 // Returns: agentId: "abc123"
 
-// Later - resume SAME agent with full context preserved
-Task({
-  description: "Continue user service",
-  prompt: "Now add input validation to the endpoints you created...",
-  subagent_type: "general-purpose",
-  resume: "abc123"  // Continues with previous context
+// Later — resume SAME agent with full context preserved
+SendMessage({
+  to: "abc123",
+  message: "Now add input validation to the endpoints you created..."
 })
 ```
 
 When to resume vs start fresh:
-- **Resume**: Continuing related work, agent needs prior context
-- **Fresh**: Unrelated task, clean slate preferred
+- **Resume (`SendMessage`)**: continuing related work, agent needs prior context
+- **Fresh (`Agent`)**: unrelated task, clean slate preferred
 
 #### Parallel Execution
 
@@ -240,45 +238,43 @@ Run multiple agents simultaneously with `run_in_background: true`:
 
 ```typescript
 // Launch multiple agents in parallel
-Task({
+Agent({
   description: "Build API endpoints",
   prompt: "...",
   subagent_type: "general-purpose",
   run_in_background: true
 })
-// Returns immediately with agentId and output_file path
+// Returns immediately with agentId and an output_file path
 
-Task({
+Agent({
   description: "Build frontend components",
   prompt: "...",
   subagent_type: "general-purpose",
   run_in_background: true
 })
 // Both agents now working simultaneously
-
-// Check on progress
-TaskOutput({
-  task_id: "agentId",
-  block: false,  // non-blocking check
-  timeout: 5000
-})
-
-// Wait for completion
-TaskOutput({
-  task_id: "agentId",
-  block: true,  // blocks until done
-  timeout: 300000
-})
 ```
+
+To monitor a background agent, prefer `Read` on the returned `output_file` path, or stream events with `Monitor`:
+
+```typescript
+// Non-blocking check — read accumulated output so far
+Read({ file_path: "<output_file from Agent return>" })
+
+// Stream events as they arrive (blocks per-event, exits on stop)
+Monitor({ file_path: "<output_file>", pattern: "..." })
+```
+
+**Note:** `TaskOutput` is deprecated (Claude Code 2.1.91+) in favor of the Read/Monitor pattern above.
 
 #### Orchestration Workflow
 
 1. **Create tasks** with `TaskCreate` for each step in the plan
 2. **Set dependencies** with `TaskUpdate` + `addBlockedBy`
 3. **Assign owners** with `TaskUpdate` + `owner`
-4. **Deploy agents** with `Task` to execute assigned work
-5. **Monitor progress** with `TaskList` and `TaskOutput`
-6. **Resume agents** with `Task` + `resume` for follow-up work
+4. **Deploy agents** with `Agent` to execute assigned work
+5. **Monitor progress** with `TaskList` (status) and `Read` on each agent's `output_file` (or `Monitor` to stream)
+6. **Resume agents** with `SendMessage` + `to: <agentId>` for follow-up work
 7. **Mark complete** with `TaskUpdate` + `status: "completed"`
 
 ## Workflow
@@ -333,7 +329,7 @@ IMPORTANT: **PLANNING ONLY** - Do not execute, build, or deploy. Output is a pla
 
     **Content review** (spawn plan-reviewer agent):
     ```
-    Task({
+    Agent({
       subagent_type: "plan-reviewer",
       description: "Review plan before OpenSpec propose",
       prompt: "Review the plan at <plan-path>. Check all 8 criteria and return a structured verdict."
@@ -352,7 +348,7 @@ IMPORTANT: **PLANNING ONLY** - Do not execute, build, or deploy. Output is a pla
     If available, provide the plan context to OpenSpec by referencing the saved plan:
     - The change name should match the plan filename (kebab-case)
     - Tell the user: "Plan review passed. Creating OpenSpec change artifacts..."
-    - Execute `/opsx:propose` with context from the plan: task description, objective, solution approach, implementation phases, and step by step tasks
+    - Execute `/openspec-propose` with context from the plan: task description, objective, solution approach, implementation phases, and step by step tasks
     - OpenSpec will create: `openspec/changes/<name>/` with proposal.md, specs/, design.md, tasks.md
 
     If OpenSpec is not available, skip with note: "OpenSpec not initialized — skipping artifact generation."

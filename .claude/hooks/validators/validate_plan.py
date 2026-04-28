@@ -56,8 +56,9 @@ DEFAULT_DIRECTORY = "specs"
 DEFAULT_EXTENSION = ".md"
 DEFAULT_MAX_AGE_MINUTES = 5
 BUILT_IN_AGENT_TYPES = {
-    "general-purpose", "Bash", "Explore", "Plan",
+    "general-purpose", "Explore", "Plan",
     "statusline-setup", "claude-code-guide", "meta-agent",
+    "context-router",
 }
 
 
